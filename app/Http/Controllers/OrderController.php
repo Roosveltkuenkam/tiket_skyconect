@@ -11,11 +11,18 @@ class OrderController extends Controller
 {
     public function create(Plan $plan)
     {
+        if (!$plan->is_active) {
+            abort(403, 'Ce forfait n’est pas disponible pour le moment.');
+        }
+
         return view('orders.create', compact('plan'));
     }
 
     public function store(Request $request, Plan $plan)
     {
+        if (!$plan->is_active) {
+        abort(403, 'Ce forfait n’est pas disponible pour le moment.');
+        }
         $request->validate([
             'customer_phone' => 'required|min:9',
         ]);

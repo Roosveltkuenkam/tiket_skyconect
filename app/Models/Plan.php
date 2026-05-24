@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 class Plan extends Model
 {
     protected $fillable = [
+        'router_id',
         'name',
         'slug',
         'duration',
@@ -15,7 +16,10 @@ class Plan extends Model
         'description',
         'is_active',
     ];
-
+    public function router()
+    {
+        return $this->belongsTo(Router::class);
+    }
     protected static function boot()
     {
         parent::boot();
