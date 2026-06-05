@@ -22,7 +22,7 @@ class CreatePaymentsTable extends Migration
             $table->string('operator_reference')->nullable();
             $table->integer('amount');
             $table->string('phone');
-            $table->enum('status', ['pending', 'successful', 'failed', 'cancelled'])->default('pending');
+            $table->enum('status', ['pending', 'successful', 'failed', 'cancelled', 'refunded'])->default('pending');
             $table->json('raw_response')->nullable();
             $table->timestamp('paid_at')->nullable();
             $table->timestamps();

@@ -1,83 +1,67 @@
 @extends('layouts.admin')
 
 @section('content')
-
 <div class="page-header d-flex justify-content-between align-items-center">
     <div>
-        <h3>Mes routeurs</h3>
-        <p>{{ $routers->count() }} routeur(s) enregistré(s)</p>
+        <span class="eyebrow"><span class="eyebrow-dot"></span> RouterOS ready</span>
+        <h3>Routeurs</h3>
+        <p>{{ $routers->count() }} routeur(s) enregistres</p>
     </div>
 
-    <a href="{{ route('admin.routers.create') }}" class="sky-btn">
-        + Ajouter un routeur
+    <a href="{{ route(($routeArea ?? 'admin') . '.routers.create') }}" class="sky-btn">
+        <i class="bi bi-plus-circle"></i> Ajouter un routeur
     </a>
 </div>
 
 @if(session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
+    <div class="alert alert-success">{{ session('success') }}</div>
 @endif
 
-<div class="alert alert-info">
-    Accès distant à vos routeurs ? SkyConnect vous permettra plus tard de gérer vos routeurs MikroTik à distance.
-</div>
-
 <div class="panel-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Gestion des routeurs</h4>
+        <span class="badge text-bg-primary">MikroTik</span>
+    </div>
 
-    <table class="table mt-3">
-        <thead>
-            <tr>
-                <th>Routeur</th>
-                <th>DNS</th>
-                <th>Assistance</th>
-                <th>Plateforme</th>
-                <th>Statut</th>
-                <th>Intégration</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @foreach($routers as $router)
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>
-                        <strong>{{ $router->name }}</strong><br>
-                        <small>{{ $router->location }}</small><br>
-                        <small>{{ $router->integration_key }}</small>
-                    </td>
-
-                    <td>{{ $router->dns ?? '-' }}</td>
-                    <td>{{ $router->assistance_phone ?? '-' }}</td>
-
-                    <td>
-                        <span class="badge bg-info text-dark">
-                            {{ $router->platform }}
-                        </span>
-                    </td>
-
-                    <td>
-                        @if($router->status === 'active')
-                            <span class="badge bg-success">Actif</span>
-                        @else
-                            <span class="badge bg-danger">Inactif</span>
-                        @endif
-                    </td>
-
-                    <td>
-                        <button class="btn btn-sm btn-outline-info">API</button>
-                        <button class="btn btn-sm btn-outline-primary">Lien</button>
-                    </td>
-
-                    <td>
-                        <button class="btn btn-sm btn-outline-warning">Modifier</button>
-                        <button class="btn btn-sm btn-outline-danger">Supprimer</button>
-                    </td>
+                    <th>Nom</th>
+                    <th>Adresse IP / DNS</th>
+                    <th>Assistance</th>
+                    <th>Plateforme</th>
+                    <th>Statut</th>
+                    <th>Integration</th>
+                    <th>Actions</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
-
+            </thead>
+            <tbody>
+                @foreach($routers as $router)
+                    <tr>
+                        <td>
+                            <strong>{{ $router->name }}</strong><br>
+                            <small>{{ $router->location ?: 'Emplacement non renseigne' }}</small>
+                        </td>
+                        <td>{{ $router->dns ?: '-' }}</td>
+                        <td>{{ $router->assistance_phone ?: '-' }}</td>
+                        <td><span class="badge text-bg-info">{{ $router->platform }}</span></td>
+                        <td>
+                            @if($router->status === 'active')
+                                <span class="badge text-bg-success">En ligne</span>
+                            @else
+                                <span class="badge text-bg-danger">Hors ligne</span>
+                            @endif
+                        </td>
+                        <td><code>{{ $router->integration_key ?: '-' }}</code></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">Lien</button>
+                            <button class="btn btn-sm btn-outline-secondary">API</button>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 </div>
-
 @endsection

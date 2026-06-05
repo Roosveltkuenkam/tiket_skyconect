@@ -30,5 +30,10 @@ class Order extends Model
     {
         return $this->hasOne(Payment::class);
     }
+
+    public function refunds()
+    {
+        return $this->hasMany(Refund::class);
+    }
     use HasFactory;
 }

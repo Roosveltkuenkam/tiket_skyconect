@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateSettingsTable extends Migration
+{
+    public function up()
+    {
+        if (Schema::hasTable('settings')) {
+            return;
+        }
+
+        Schema::create('settings', function (Blueprint $table) {
+            $table->id();
+            $table->string('key', 100)->unique();
+            $table->text('value')->nullable();
+            $table->string('type')->default('text');
+            $table->string('setting_group', 50)->default('general');
+            $table->boolean('is_secret')->default(false);
+            $table->timestamps();
+
+            $table->index('setting_group');
+            $table->index('is_secret');
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('settings');
+    }
+}

@@ -20,7 +20,7 @@ class CreateOrdersTable extends Migration
             $table->foreignId('ticket_id')->nullable()->constrained()->nullOnDelete();
             $table->string('customer_phone');
             $table->integer('amount');
-            $table->enum('status', ['pending', 'paid', 'failed', 'cancelled'])->default('pending');
+            $table->enum('status', ['pending', 'paid', 'failed', 'cancelled', 'refunded'])->default('pending');
             $table->timestamps();
         });
     }
