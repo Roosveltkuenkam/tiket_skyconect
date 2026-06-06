@@ -82,7 +82,7 @@
         <div class="panel-card">
             <span class="eyebrow"><span class="eyebrow-dot"></span> Reponse brute provider</span>
             @if($payment->raw_response)
-                <pre class="mt-3 p-3 rounded" style="background:#0f172a;color:#e2e8f0;white-space:pre-wrap;font-size:13px;">{{ json_encode($payment->raw_response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                <pre class="mt-3 p-3 rounded" style="background:#0f172a;color:#e2e8f0;white-space:pre-wrap;font-size:13px;">{{ json_encode($payment->safeRawResponse(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
             @else
                 <p class="text-muted mt-3 mb-0">Aucune reponse brute enregistree.</p>
             @endif

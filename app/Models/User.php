@@ -29,6 +29,7 @@ class User extends Authenticatable
         'email',
         'phone',
         'business_name',
+        'business_type',
         'city',
         'country',
         'role',

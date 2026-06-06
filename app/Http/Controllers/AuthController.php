@@ -61,8 +61,9 @@ class AuthController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
-            'phone' => 'nullable|string|max:50',
-            'business_name' => 'nullable|string|max:255',
+            'phone' => 'required|string|max:50',
+            'business_name' => 'required|string|max:255',
+            'business_type' => 'required|in:hotel,cybercafe,snack,residence,campus,other',
             'city' => 'nullable|string|max:255',
             'country' => 'nullable|string|max:255',
             'password' => 'required|string|min:8|confirmed',
@@ -74,10 +75,11 @@ class AuthController extends Controller
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'phone' => $data['phone'] ?? null,
-            'business_name' => $data['business_name'] ?? null,
+            'phone' => $data['phone'],
+            'business_name' => $data['business_name'],
+            'business_type' => $data['business_type'],
             'city' => $data['city'] ?? null,
-            'country' => $data['country'] ?? null,
+            'country' => $data['country'] ?: config('app.default_country', 'Cameroun'),
             'role' => 'client',
             'is_active' => true,
             'password' => Hash::make($data['password']),
@@ -117,6 +119,7 @@ class AuthController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'business_name' => $user->business_name,
+            'business_type' => $user->business_type,
         ], $request);
 
         Auth::login($user);

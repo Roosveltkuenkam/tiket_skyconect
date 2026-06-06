@@ -33,7 +33,7 @@
     <div class="col-md-3">
         <div class="stat-card">
             <div class="stat-title">Tickets disponibles</div>
-            <div class="stat-value">{{ \App\Models\Ticket::where('status', 'available')->count() }}</div>
+            <div class="stat-value">{{ $ticketsAvailableCount }}</div>
         </div>
     </div>
     <div class="col-md-3">
@@ -65,7 +65,7 @@
                         <td><span class="badge text-bg-info">{{ $plan->router->name ?? 'Aucun routeur' }}</span></td>
                         <td><strong class="theme-link-icon">{{ $plan->price }} XAF</strong></td>
                         <td><span class="badge text-bg-warning">{{ $plan->duration }}</span></td>
-                        <td><span class="badge text-bg-primary">{{ \App\Models\Ticket::where('plan_id', $plan->id)->where('status', 'available')->count() }}</span></td>
+                        <td><span class="badge text-bg-primary">{{ $plan->available_tickets_count }}</span></td>
                         <td>
                             @if($plan->is_active)
                                 <span class="badge text-bg-success">Actif</span>

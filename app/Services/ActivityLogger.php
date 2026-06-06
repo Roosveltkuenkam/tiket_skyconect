@@ -47,7 +47,21 @@ class ActivityLogger
 
     private static function sanitize(array $details)
     {
-        $blocked = ['password', 'token', 'secret', 'remember_token', 'raw_response'];
+        $blocked = [
+            'password',
+            'token',
+            'secret',
+            'remember_token',
+            'raw_response',
+            'api_key',
+            'private_key',
+            'public_token',
+            'access_token',
+            'integration_key',
+            'campay_token',
+            'email',
+            'phone',
+        ];
 
         foreach ($details as $key => $value) {
             foreach ($blocked as $blockedKey) {

@@ -50,17 +50,26 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">{{ __('ui.auth.phone') }}</label>
-                    <input type="text" name="phone" class="modern-input" style="width:100%;" value="{{ old('phone') }}">
+                    <input type="text" name="phone" class="modern-input" style="width:100%;" value="{{ old('phone') }}" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">{{ __('ui.auth.business') }}</label>
-                    <input type="text" name="business_name" class="modern-input" style="width:100%;" value="{{ old('business_name') }}">
+                    <input type="text" name="business_name" class="modern-input" style="width:100%;" value="{{ old('business_name') }}" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{{ __('ui.auth.business_type') }}</label>
+                    <select name="business_type" class="modern-input" style="width:100%;" required>
+                        <option value="">{{ __('ui.auth.choose_business_type') }}</option>
+                        @foreach(__('ui.auth.business_types') as $value => $label)
+                            <option value="{{ $value }}" {{ old('business_type') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">{{ __('ui.auth.city_country') }}</label>
                     <div class="field-grid-two">
                         <input type="text" name="city" class="modern-input" value="{{ old('city') }}" placeholder="{{ __('ui.auth.city') }}">
-                        <input type="text" name="country" class="modern-input" value="{{ old('country') }}" placeholder="{{ __('ui.auth.country') }}">
+                        <input type="text" name="country" class="modern-input" value="{{ old('country', config('app.default_country', 'Cameroun')) }}" placeholder="{{ __('ui.auth.country') }}">
                     </div>
                 </div>
                 <div class="mb-3">

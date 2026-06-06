@@ -8,9 +8,9 @@ use App\Models\Ticket;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 
-class AdminPlanController extends Controller
+class DashboardPlanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $plans = Plan::with('router')
             ->withCount([
@@ -18,16 +18,24 @@ class AdminPlanController extends Controller
                     $query->where('status', 'available');
                 },
             ])
+            ->whereHas('router', function ($query) use ($request) {
+                $query->where('user_id', $request->user()->id);
+            })
             ->latest()
             ->get();
-        $ticketsAvailableCount = Ticket::where('status', 'available')->count();
+        $ticketsAvailableCount = Ticket::where('status', 'available')
+            ->whereHas('plan.router', function ($query) use ($request) {
+                $query->where('user_id', $request->user()->id);
+            })
+            ->count();
 
         return view('admin.plans.index', compact('plans', 'ticketsAvailableCount'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        $routers = Router::where('status', 'active')
+        $routers = Router::where('user_id', $request->user()->id)
+            ->where('status', 'active')
             ->get();
 
         return view('admin.plans.create', compact('routers'));
@@ -43,6 +51,13 @@ class AdminPlanController extends Controller
             'description' => 'nullable',
             'is_active' => 'nullable',
         ]);
+
+        abort_unless(
+            Router::where('id', $request->router_id)
+                ->where('user_id', $request->user()->id)
+                ->exists(),
+            403
+        );
 
         $plan = Plan::create([
             'router_id' => $request->router_id,
@@ -61,7 +76,7 @@ class AdminPlanController extends Controller
             'is_active' => $plan->is_active,
         ], $request);
 
-        return redirect()->route('admin.plans.index')
+        return redirect()->route('dashboard.plans.index')
             ->with('success', 'Forfait ajoute avec succes.');
     }
 }

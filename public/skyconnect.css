@@ -966,6 +966,73 @@ h6 {
     font-weight: 800;
 }
 
+.line-chart-card {
+    display: block;
+    min-height: 300px;
+    padding-top: 4px;
+}
+
+.line-chart {
+    width: 100%;
+    height: 230px;
+    overflow: visible;
+}
+
+.chart-grid-line {
+    stroke: rgba(13, 71, 161, 0.12);
+    stroke-width: 0.6;
+}
+
+[data-theme="dark"] .chart-grid-line {
+    stroke: rgba(255, 255, 255, 0.12);
+}
+
+.chart-line {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.8;
+}
+
+.chart-line-revenue {
+    stroke: url(#revenueLine);
+}
+
+.chart-line-sales {
+    stroke: url(#salesLine);
+}
+
+.chart-dot {
+    stroke: var(--surface-strong);
+    stroke-width: 1.3;
+}
+
+.chart-dot-revenue {
+    fill: var(--sky-blue);
+}
+
+.chart-dot-sales {
+    fill: var(--sky-success);
+}
+
+.line-chart-labels {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(56px, 1fr));
+    gap: 8px;
+}
+
+.audit-details dt {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.audit-details dd {
+    margin-bottom: 8px;
+    overflow-wrap: anywhere;
+}
+
 @keyframes wifiPulse {
     50% {
         opacity: 0.55;

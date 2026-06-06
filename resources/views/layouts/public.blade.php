@@ -32,21 +32,31 @@
 
                 <nav class="sky-nav-links">
                     <a href="{{ url('/') }}">{{ __('ui.nav.home') }}</a>
-                    <a href="{{ route('plans.index') }}">{{ __('ui.nav.plans') }}</a>
-                    <a href="{{ url('/#coverage') }}">{{ __('ui.nav.coverage') }}</a>
+                    <a href="{{ url('/#features') }}">{{ __('ui.nav.features') }}</a>
+                    <a href="{{ url('/#pricing') }}">{{ __('ui.nav.pricing') }}</a>
+                    <a href="{{ url('/#how-it-works') }}">{{ __('ui.nav.how_it_works') }}</a>
                     <a href="{{ url('/#support') }}">{{ __('ui.nav.support') }}</a>
-                    <a href="{{ route('legal.terms') }}">{{ __('ui.nav.terms') }}</a>
-                    <a href="{{ route('legal.privacy') }}">{{ __('ui.nav.privacy') }}</a>
-                    <a href="{{ route('login') }}">{{ __('ui.nav.login') }}</a>
+                    @guest
+                        <a href="{{ route('login') }}">{{ __('ui.nav.login') }}</a>
+                    @endguest
                 </nav>
 
                 <div class="d-flex align-items-center gap-2">
                     @include('partials.language-switcher')
-                    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Changer le theme">
+                    <button type="button" class="theme-toggle" data-theme-toggle aria-label="{{ __('ui.common.change_theme') }}">
                         <i class="bi bi-moon-stars-fill theme-icon-light"></i>
                         <i class="bi bi-sun-fill theme-icon-dark"></i>
                     </button>
-                    <a href="{{ route('plans.index') }}" class="sky-btn">{{ __('ui.nav.buy') }}</a>
+                    @guest
+                        <a href="{{ route('register') }}" class="sky-btn">{{ __('ui.nav.create_account') }}</a>
+                    @else
+                        <form method="POST" action="{{ route('logout') }}" class="m-0">
+                            @csrf
+                            <button type="submit" class="sky-btn-outline">
+                                <i class="bi bi-box-arrow-right"></i> {{ __('ui.common.logout') }}
+                            </button>
+                        </form>
+                    @endguest
                 </div>
             </div>
         </header>

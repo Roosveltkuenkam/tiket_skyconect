@@ -16,7 +16,7 @@
                 <div class="pay-method"><span><i class="bi bi-credit-card-2-front"></i> Campay</span><strong>API</strong></div>
             </div>
 
-            <form method="POST" action="{{ route('payments.simulate', $order) }}">
+            <form method="POST" action="{{ route('payments.simulate', $order->publicRouteParameters()) }}">
                 @csrf
                 <button type="submit" class="sky-btn" style="width:100%;">
                     {{ __('ui.orders.confirm_test_payment') }} <i class="bi bi-check2-circle"></i>

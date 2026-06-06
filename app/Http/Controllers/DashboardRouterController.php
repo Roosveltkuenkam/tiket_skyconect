@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminNotification;
 use App\Models\Router;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use App\Services\ActivityLogger;
 
-class AdminRouterController extends Controller
+class DashboardRouterController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $routers = Router::latest()
+        $routers = Router::where('user_id', $request->user()->id)
+            ->latest()
             ->get();
 
         return view('admin.routers.index', compact('routers'));
@@ -24,6 +26,22 @@ class AdminRouterController extends Controller
 
     public function store(Request $request)
     {
+        if (! $request->user()->canUseSubscription()) {
+            AdminNotification::notify(
+                'account_suspended',
+                'Compte client suspendu ou expire',
+                $request->user()->name . ' a tente de creer un routeur avec un abonnement non actif.',
+                'warning',
+                ['user_id' => $request->user()->id]
+            );
+
+            return back()->with('error', "Votre abonnement n'est pas actif.");
+        }
+
+        if ($request->user()->subscriptionLimitReached('routers')) {
+            return back()->with('error', 'Limite de routeurs atteinte pour votre abonnement.');
+        }
+
         $request->validate([
             'name' => 'required',
             'location' => 'nullable',
@@ -34,7 +52,7 @@ class AdminRouterController extends Controller
         ]);
 
         $router = Router::create([
-            'user_id' => null,
+            'user_id' => $request->user()->id,
             'name' => $request->name,
             'location' => $request->location,
             'dns' => $request->dns,
@@ -51,7 +69,7 @@ class AdminRouterController extends Controller
             'platform' => $router->platform,
         ], $request);
 
-        return redirect()->route('admin.routers.index')
+        return redirect()->route('dashboard.routers.index')
             ->with('success', 'Routeur ajoute avec succes.');
     }
 }

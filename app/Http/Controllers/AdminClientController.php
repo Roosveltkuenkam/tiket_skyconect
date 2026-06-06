@@ -121,14 +121,11 @@ class AdminClientController extends Controller
     public function updateRole(Request $request, User $client)
     {
         $this->ensureManagePermission($request);
+        $this->ensureClient($client);
 
         $data = $request->validate([
             'role' => 'required|in:client,admin,support_agent,accountant,technician',
         ]);
-
-        if ($client->isSuperAdmin()) {
-            abort(403, 'Le role super admin ne peut pas etre modifie ici.');
-        }
 
         $oldRole = $client->role;
         $client->update(['role' => $data['role']]);

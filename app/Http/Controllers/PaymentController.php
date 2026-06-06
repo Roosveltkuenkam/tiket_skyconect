@@ -11,10 +11,12 @@ use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
-    public function simulate(Order $order)
+    public function simulate(Order $order, $accessToken)
     {
+        abort_unless($order->hasValidPublicAccessToken($accessToken), 404);
+
         if ($order->status === 'paid') {
-            return redirect()->route('tickets.show', $order);
+            return redirect()->route('tickets.show', $order->publicRouteParameters());
         }
 
         $payment = null;
@@ -87,6 +89,6 @@ class PaymentController extends Controller
             ]);
         }
 
-        return redirect()->route('tickets.show', $order);
+        return redirect()->route('tickets.show', $order->publicRouteParameters());
     }
 }

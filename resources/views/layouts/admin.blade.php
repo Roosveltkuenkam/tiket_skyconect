@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SkyConnect Dashboard</title>
+    <title>{{ __('ui.common.dashboard') }} - SkyConnect</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
@@ -70,14 +70,6 @@
                 <i class="bi bi-gem"></i> {{ __('ui.common.subscriptions') }}
             </a>
         @endif
-        @if($area === 'admin' && auth()->user()->canAccessBackOffice('notifications.view'))
-            <a href="{{ route('admin.notifications.index') }}" class="menu-link {{ request()->is('admin/notifications*') ? 'active' : '' }}">
-                <i class="bi bi-bell-fill"></i> {{ __('ui.common.notifications') }}
-                @if($unreadAdminNotifications > 0)
-                    <span class="badge text-bg-danger ms-auto">{{ $unreadAdminNotifications }}</span>
-                @endif
-            </a>
-        @endif
         @if($area === 'admin' && auth()->user()->canAccessBackOffice('client_notifications.view'))
             <a href="{{ route('admin.client_notifications.index') }}" class="menu-link {{ request()->is('admin/client-notifications*') ? 'active' : '' }}">
                 <i class="bi bi-envelope-paper-fill"></i> {{ __('ui.common.client_messages') }}
@@ -110,12 +102,6 @@
         @endif
 
         @if($area === 'dashboard')
-            <a href="{{ route('dashboard.notifications.index') }}" class="menu-link {{ request()->is('dashboard/notifications*') ? 'active' : '' }}">
-                <i class="bi bi-bell-fill"></i> {{ __('ui.common.notifications') }}
-                @if($unreadClientNotifications > 0)
-                    <span class="badge text-bg-danger ms-auto">{{ $unreadClientNotifications }}</span>
-                @endif
-            </a>
             <a href="{{ route('dashboard.support.index') }}" class="menu-link {{ request()->is('dashboard/support*') ? 'active' : '' }}">
                 <i class="bi bi-life-preserver"></i> {{ __('ui.nav.support') }}
             </a>
@@ -130,14 +116,6 @@
             @endif
         @endif
 
-        @auth
-            <form method="POST" action="{{ route('logout') }}" style="margin-top:28px;">
-                @csrf
-                <button type="submit" class="sky-btn-outline" style="width:100%;">
-                    <i class="bi bi-box-arrow-right"></i> {{ __('ui.common.logout') }}
-                </button>
-            </form>
-        @endauth
     </aside>
 
     <main class="admin-main">
@@ -148,7 +126,7 @@
             </div>
             <div class="d-flex align-items-center gap-3">
                 @include('partials.language-switcher')
-                <button type="button" class="theme-toggle" data-theme-toggle aria-label="Changer le theme">
+                <button type="button" class="theme-toggle" data-theme-toggle aria-label="{{ __('ui.common.change_theme') }}">
                     <i class="bi bi-moon-stars-fill theme-icon-light"></i>
                     <i class="bi bi-sun-fill theme-icon-dark"></i>
                 </button>
@@ -170,7 +148,16 @@
                 @else
                     <i class="bi bi-bell fs-5 theme-link-icon"></i>
                 @endif
-                <i class="bi bi-person-circle fs-3 theme-link-icon"></i>
+                <a href="{{ route($area . '.profile.edit') }}" class="theme-link-icon" title="{{ __('ui.profile.title') }}" aria-label="{{ __('ui.profile.title') }}">
+                    <i class="bi bi-person-circle fs-3"></i>
+                </a>
+                <form method="POST" action="{{ route('logout') }}" class="m-0">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>{{ __('ui.common.logout') }}</span>
+                    </button>
+                </form>
             </div>
         </div>
 

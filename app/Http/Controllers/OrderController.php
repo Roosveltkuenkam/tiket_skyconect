@@ -35,17 +35,20 @@ class OrderController extends Controller
 
         $order = Order::create([
             'reference' => 'SKY-' . strtoupper(Str::random(8)),
+            'public_access_token' => Str::random(48),
             'plan_id' => $plan->id,
             'customer_phone' => $request->customer_phone,
             'amount' => $plan->price,
             'status' => 'pending',
         ]);
 
-        return redirect()->route('orders.show', $order);
+        return redirect()->route('orders.show', $order->publicRouteParameters());
     }
 
-    public function show(Order $order)
+    public function show(Order $order, $accessToken)
     {
+        abort_unless($order->hasValidPublicAccessToken($accessToken), 404);
+
         return view('orders.show', compact('order'));
     }
 

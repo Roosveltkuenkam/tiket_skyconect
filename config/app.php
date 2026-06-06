@@ -88,6 +88,8 @@ return [
         'it' => 'Italiano',
     ],
 
+    'default_country' => env('APP_DEFAULT_COUNTRY', 'Cameroun'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Fallback Locale

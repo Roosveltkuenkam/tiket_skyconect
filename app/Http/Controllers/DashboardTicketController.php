@@ -5,21 +5,24 @@ namespace App\Http\Controllers;
 use App\Models\Plan;
 use App\Models\Router;
 use App\Models\Ticket;
-use App\Models\User;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 
-class AdminTicketController extends Controller
+class DashboardTicketController extends Controller
 {
     public function index(Request $request)
     {
-        $clients = User::where('role', User::ROLE_CLIENT)->orderBy('name')->get();
+        $clients = collect();
 
         $routers = Router::with('user')
+            ->where('user_id', $request->user()->id)
             ->orderBy('name')
             ->get();
 
         $plans = Plan::with('router')
+            ->whereHas('router', function ($query) use ($request) {
+                $query->where('user_id', $request->user()->id);
+            })
             ->when($request->filled('router_id'), function ($query) use ($request) {
                 $query->where('router_id', $request->router_id);
             })
@@ -31,7 +34,7 @@ class AdminTicketController extends Controller
             ->paginate(20)
             ->appends($request->query());
 
-        $canViewPasswords = $this->canViewPasswords($request);
+        $canViewPasswords = true;
 
         return view('admin.tickets.index', compact(
             'tickets',
@@ -44,20 +47,18 @@ class AdminTicketController extends Controller
 
     public function export(Request $request)
     {
-        $canViewPasswords = $this->canViewPasswords($request);
         $fileName = 'skyconnect-tickets-' . now()->format('Ymd-His') . '.csv';
 
         ActivityLogger::log('tickets.exported', Ticket::class, [
-            'filters' => $request->only(['client_id', 'router_id', 'plan_id', 'status']),
-            'passwords_visible' => $canViewPasswords,
+            'filters' => $request->only(['router_id', 'plan_id', 'status']),
+            'passwords_visible' => true,
         ], $request);
 
-        return response()->streamDownload(function () use ($request, $canViewPasswords) {
+        return response()->streamDownload(function () use ($request) {
             $handle = fopen('php://output', 'w');
 
             fputcsv($handle, [
                 'ID',
-                'Client',
                 'Routeur',
                 'Forfait',
                 'Username',
@@ -71,15 +72,14 @@ class AdminTicketController extends Controller
 
             $this->filteredTickets($request)
                 ->orderBy('id')
-                ->chunk(500, function ($tickets) use ($handle, $canViewPasswords) {
+                ->chunk(500, function ($tickets) use ($handle) {
                     foreach ($tickets as $ticket) {
                         fputcsv($handle, [
                             $ticket->id,
-                            optional(optional(optional($ticket->plan)->router)->user)->name,
                             optional(optional($ticket->plan)->router)->name,
                             optional($ticket->plan)->name,
                             $ticket->username,
-                            $canViewPasswords ? $ticket->password : '***',
+                            $ticket->password,
                             $ticket->profile,
                             $ticket->status,
                             optional($ticket->order)->reference,
@@ -155,7 +155,10 @@ class AdminTicketController extends Controller
             'plan_id' => 'nullable|exists:plans,id',
         ]);
 
-        $query = Ticket::where('status', 'available');
+        $query = Ticket::where('status', 'available')
+            ->whereHas('plan.router', function ($routerQuery) use ($request) {
+                $routerQuery->where('user_id', $request->user()->id);
+            });
 
         if ($request->filled('plan_id')) {
             $query->where('plan_id', $request->plan_id);
@@ -175,10 +178,8 @@ class AdminTicketController extends Controller
     private function filteredTickets(Request $request)
     {
         return Ticket::with(['plan.router.user', 'order'])
-            ->when($request->filled('client_id'), function ($query) use ($request) {
-                $query->whereHas('plan.router', function ($routerQuery) use ($request) {
-                    $routerQuery->where('user_id', $request->client_id);
-                });
+            ->whereHas('plan.router', function ($routerQuery) use ($request) {
+                $routerQuery->where('user_id', $request->user()->id);
             })
             ->when($request->filled('router_id'), function ($query) use ($request) {
                 $query->whereHas('plan', function ($planQuery) use ($request) {
@@ -196,17 +197,8 @@ class AdminTicketController extends Controller
     private function ensureTicketAccess(Ticket $ticket)
     {
         abort_unless(
-            auth()->check() && auth()->user()->canAccessBackOffice('tickets.manage'),
+            $ticket->plan && $ticket->plan->router && $ticket->plan->router->user_id === auth()->id(),
             403
         );
-    }
-
-    private function canViewPasswords(Request $request)
-    {
-        if (! $request->user()) {
-            return false;
-        }
-
-        return $request->user()->canAccessBackOffice('tickets.manage');
     }
 }

@@ -130,24 +130,61 @@
                 <h4 class="mb-0">{{ __('ui.admin_dashboard.revenue_sales') }}</h4>
                 <span class="badge text-bg-success">{{ __('ui.admin_dashboard.last_7_days') }}</span>
             </div>
-            <div class="chart-card" style="align-items:stretch;gap:16px;">
-                @foreach($chartRows as $row)
-                    @php
-                        $revenueHeight = 32 + (($row['revenue'] / $maxChartRevenue) * 150);
-                        $salesHeight = 24 + (($row['sales'] / $maxChartSales) * 110);
-                    @endphp
-                    <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;min-width:52px;">
-                        <div style="display:flex;align-items:flex-end;justify-content:center;gap:5px;height:190px;">
-                            <div title="{{ __('ui.admin_dashboard.revenue') }}: {{ $row['revenue'] }} XAF" class="chart-bar" style="width:20px;height:{{ $revenueHeight }}px;"></div>
-                            <div title="{{ __('ui.admin_dashboard.sales') }}: {{ $row['sales'] }}" class="chart-bar" style="width:12px;height:{{ $salesHeight }}px;background:linear-gradient(180deg,#22c55e,#15803d);"></div>
+            @php
+                $chartCount = max(count($chartRows), 1);
+                $revenuePoints = [];
+                $salesPoints = [];
+                foreach($chartRows as $index => $row) {
+                    $x = $chartCount === 1 ? 50 : 6 + (($index / ($chartCount - 1)) * 88);
+                    $revenueY = 90 - (($row['revenue'] / max($maxChartRevenue, 1)) * 76);
+                    $salesY = 90 - (($row['sales'] / max($maxChartSales, 1)) * 76);
+                    $revenuePoints[] = round($x, 2) . ',' . round($revenueY, 2);
+                    $salesPoints[] = round($x, 2) . ',' . round($salesY, 2);
+                }
+            @endphp
+            <div class="chart-card line-chart-card">
+                <svg class="line-chart" viewBox="0 0 100 100" role="img" aria-label="{{ __('ui.admin_dashboard.revenue_sales') }}">
+                    <defs>
+                        <linearGradient id="revenueLine" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stop-color="#1e88e5" />
+                            <stop offset="100%" stop-color="#0d47a1" />
+                        </linearGradient>
+                        <linearGradient id="salesLine" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stop-color="#22c55e" />
+                            <stop offset="100%" stop-color="#15803d" />
+                        </linearGradient>
+                    </defs>
+                    <line x1="6" y1="90" x2="94" y2="90" class="chart-grid-line" />
+                    <line x1="6" y1="65" x2="94" y2="65" class="chart-grid-line" />
+                    <line x1="6" y1="40" x2="94" y2="40" class="chart-grid-line" />
+                    <line x1="6" y1="15" x2="94" y2="15" class="chart-grid-line" />
+                    <polyline points="{{ implode(' ', $revenuePoints) }}" class="chart-line chart-line-revenue" />
+                    <polyline points="{{ implode(' ', $salesPoints) }}" class="chart-line chart-line-sales" />
+                    @foreach($chartRows as $index => $row)
+                        @php
+                            $x = $chartCount === 1 ? 50 : 6 + (($index / ($chartCount - 1)) * 88);
+                            $revenueY = 90 - (($row['revenue'] / max($maxChartRevenue, 1)) * 76);
+                            $salesY = 90 - (($row['sales'] / max($maxChartSales, 1)) * 76);
+                        @endphp
+                        <circle cx="{{ $x }}" cy="{{ $revenueY }}" r="1.8" class="chart-dot chart-dot-revenue">
+                            <title>{{ __('ui.admin_dashboard.revenue') }}: {{ number_format($row['revenue'], 0, ',', ' ') }} XAF</title>
+                        </circle>
+                        <circle cx="{{ $x }}" cy="{{ $salesY }}" r="1.8" class="chart-dot chart-dot-sales">
+                            <title>{{ __('ui.admin_dashboard.sales') }}: {{ $row['sales'] }}</title>
+                        </circle>
+                    @endforeach
+                </svg>
+                <div class="line-chart-labels">
+                    @foreach($chartRows as $row)
+                        <div>
+                            <div class="chart-label">{{ $row['label'] }}</div>
+                            <div class="chart-meta">
+                                {{ __('ui.admin_dashboard.sale_count', ['count' => $row['sales']]) }}<br>
+                                {{ number_format($row['revenue'], 0, ',', ' ') }} XAF
+                            </div>
                         </div>
-                        <div class="chart-label">{{ $row['label'] }}</div>
-                        <div class="chart-meta">
-                            {{ __('ui.admin_dashboard.sale_count', ['count' => $row['sales']]) }}<br>
-                            {{ number_format($row['revenue'], 0, ',', ' ') }} XAF
-                        </div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
             </div>
             <div class="d-flex gap-3 mt-3 chart-legend">
                 <span><i class="bi bi-square-fill" style="color:#1e88e5;"></i> {{ __('ui.admin_dashboard.revenue') }}</span>

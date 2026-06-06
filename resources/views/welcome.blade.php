@@ -43,7 +43,7 @@
         </div>
     </section>
 
-    <section class="sky-section">
+    <section id="features" class="sky-section">
         <div class="sky-container">
             <div class="section-head">
                 <div>
@@ -64,7 +64,7 @@
         </div>
     </section>
 
-    <section class="sky-section">
+    <section id="how-it-works" class="sky-section">
         <div class="sky-container">
             <div class="section-head">
                 <div>
@@ -107,7 +107,7 @@
         </div>
     </section>
 
-    <section id="plans" class="sky-section">
+    <section id="pricing" class="sky-section">
         <div class="sky-container">
             <div class="section-head">
                 <div>

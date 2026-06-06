@@ -16,17 +16,22 @@ use App\Http\Controllers\AdminSubscriptionController;
 use App\Http\Controllers\AdminSupportController;
 use App\Http\Controllers\AdminTicketController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardOnboardingController;
 use App\Http\Controllers\DashboardClientNotificationController;
+use App\Http\Controllers\DashboardDashboardController;
+use App\Http\Controllers\DashboardOnboardingController;
 use App\Http\Controllers\DashboardOrderController;
 use App\Http\Controllers\DashboardPaymentController;
+use App\Http\Controllers\DashboardPlanController;
+use App\Http\Controllers\DashboardRouterController;
 use App\Http\Controllers\DashboardSettingsController;
 use App\Http\Controllers\DashboardSupportController;
+use App\Http\Controllers\DashboardTicketController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketImportController;
 use Illuminate\Support\Facades\Route;
@@ -42,9 +47,9 @@ Route::get('/confidentialite', [LegalPageController::class, 'privacy'])->name('l
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.store');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login.store');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->name('register.store');
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:3,1')->name('register.store');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])
@@ -57,15 +62,17 @@ Route::get('/acheter/forfait/{plan:slug}', [OrderController::class, 'create'])
     ->name('orders.create');
 
 Route::post('/acheter/forfait/{plan:slug}', [OrderController::class, 'store'])
+    ->middleware('throttle:10,1')
     ->name('orders.store');
 
-Route::get('/commande/{order}', [OrderController::class, 'show'])
+Route::get('/commande/{order:reference}/{accessToken}', [OrderController::class, 'show'])
     ->name('orders.show');
 
-Route::post('/commande/{order}/paiement-test', [PaymentController::class, 'simulate'])
+Route::post('/commande/{order:reference}/{accessToken}/paiement-test', [PaymentController::class, 'simulate'])
+    ->middleware('throttle:10,1')
     ->name('payments.simulate');
 
-Route::get('/ticket/{order}', [TicketController::class, 'show'])
+Route::get('/ticket/{order:reference}/{accessToken}', [TicketController::class, 'show'])
     ->name('tickets.show');
 
 Route::middleware(['auth', 'back_office', 'interface.context'])
@@ -73,6 +80,9 @@ Route::middleware(['auth', 'back_office', 'interface.context'])
     ->name('admin.')
     ->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
         Route::get('/audit', [AdminAuditController::class, 'index'])
             ->middleware('back_office:audit.view')
@@ -246,25 +256,27 @@ Route::middleware(['auth', 'dashboard_user', 'interface.context'])
     ->prefix('dashboard')
     ->name('dashboard.')
     ->group(function () {
-        Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/', [DashboardDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::get('/onboarding', [DashboardOnboardingController::class, 'index'])->name('onboarding.index');
 
-        Route::get('/routers', [AdminRouterController::class, 'index'])->name('routers.index');
-        Route::get('/routers/create', [AdminRouterController::class, 'create'])->name('routers.create');
-        Route::post('/routers', [AdminRouterController::class, 'store'])->name('routers.store');
+        Route::get('/routers', [DashboardRouterController::class, 'index'])->name('routers.index');
+        Route::get('/routers/create', [DashboardRouterController::class, 'create'])->name('routers.create');
+        Route::post('/routers', [DashboardRouterController::class, 'store'])->name('routers.store');
 
-        Route::get('/plans', [AdminPlanController::class, 'index'])->name('plans.index');
-        Route::get('/plans/create', [AdminPlanController::class, 'create'])->name('plans.create');
-        Route::post('/plans', [AdminPlanController::class, 'store'])->name('plans.store');
+        Route::get('/plans', [DashboardPlanController::class, 'index'])->name('plans.index');
+        Route::get('/plans/create', [DashboardPlanController::class, 'create'])->name('plans.create');
+        Route::post('/plans', [DashboardPlanController::class, 'store'])->name('plans.store');
 
-        Route::get('/tickets', [AdminTicketController::class, 'index'])->name('tickets.index');
-        Route::get('/tickets/export', [AdminTicketController::class, 'export'])->name('tickets.export');
+        Route::get('/tickets', [DashboardTicketController::class, 'index'])->name('tickets.index');
+        Route::get('/tickets/export', [DashboardTicketController::class, 'export'])->name('tickets.export');
         Route::get('/tickets/import', [TicketImportController::class, 'create'])->name('tickets.import.create');
         Route::post('/tickets/import', [TicketImportController::class, 'store'])->name('tickets.import.store');
-        Route::patch('/tickets/{ticket}/disable', [AdminTicketController::class, 'disable'])->name('tickets.disable');
-        Route::patch('/tickets/{ticket}/enable', [AdminTicketController::class, 'enable'])->name('tickets.enable');
-        Route::delete('/tickets/clear', [AdminTicketController::class, 'clear'])->name('tickets.clear');
-        Route::delete('/tickets/{ticket}', [AdminTicketController::class, 'destroy'])->name('tickets.destroy');
+        Route::patch('/tickets/{ticket}/disable', [DashboardTicketController::class, 'disable'])->name('tickets.disable');
+        Route::patch('/tickets/{ticket}/enable', [DashboardTicketController::class, 'enable'])->name('tickets.enable');
+        Route::delete('/tickets/clear', [DashboardTicketController::class, 'clear'])->name('tickets.clear');
+        Route::delete('/tickets/{ticket}', [DashboardTicketController::class, 'destroy'])->name('tickets.destroy');
 
         Route::get('/orders', [DashboardOrderController::class, 'index'])->name('orders.index');
         Route::get('/payments', [DashboardPaymentController::class, 'index'])->name('payments.index');

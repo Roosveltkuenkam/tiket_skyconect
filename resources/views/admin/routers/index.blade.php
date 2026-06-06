@@ -53,7 +53,11 @@
                                 <span class="badge text-bg-danger">Hors ligne</span>
                             @endif
                         </td>
-                        <td><code>{{ $router->integration_key ?: '-' }}</code></td>
+                        <td>
+                            <code>
+                                {{ $router->integration_key ? substr($router->integration_key, 0, 3) . str_repeat('*', max(strlen($router->integration_key) - 5, 3)) . substr($router->integration_key, -2) : '-' }}
+                            </code>
+                        </td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary">Lien</button>
                             <button class="btn btn-sm btn-outline-secondary">API</button>
