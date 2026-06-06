@@ -25,6 +25,7 @@ use App\Http\Controllers\DashboardPlanController;
 use App\Http\Controllers\DashboardRouterController;
 use App\Http\Controllers\DashboardSettingsController;
 use App\Http\Controllers\DashboardSupportController;
+use App\Http\Controllers\DashboardSubscriptionController;
 use App\Http\Controllers\DashboardTicketController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\LocaleController;
@@ -280,6 +281,8 @@ Route::middleware(['auth', 'dashboard_user', 'interface.context'])
 
         Route::get('/orders', [DashboardOrderController::class, 'index'])->name('orders.index');
         Route::get('/payments', [DashboardPaymentController::class, 'index'])->name('payments.index');
+        Route::get('/subscriptions', [DashboardSubscriptionController::class, 'index'])->name('subscriptions.index');
+        Route::post('/subscriptions/{plan:slug}', [DashboardSubscriptionController::class, 'choose'])->name('subscriptions.choose');
         Route::get('/notifications', [DashboardClientNotificationController::class, 'index'])->name('notifications.index');
         Route::patch('/notifications/{notification}/read', [DashboardClientNotificationController::class, 'markRead'])->name('notifications.read');
         Route::get('/support', [DashboardSupportController::class, 'index'])->name('support.index');

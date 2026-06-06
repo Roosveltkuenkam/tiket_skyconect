@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ __('ui.common.dashboard') }} - SkyConnect</title>
+    @php($platformLogo = \App\Services\SettingManager::get('platform.logo_path', 'images/logo-skyconnect.PNG'))
+    <link rel="icon" type="image/png" href="{{ asset($platformLogo) }}">
+    <link rel="apple-touch-icon" href="{{ asset($platformLogo) }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
@@ -23,9 +26,9 @@
 <body class="admin-shell">
     @php($area = $routeArea ?? 'admin')
     @php($platformName = \App\Services\SettingManager::get('platform.name', 'SkyConnect'))
-    @php($platformLogo = \App\Services\SettingManager::get('platform.logo_path', 'images/logo-skyconnect.PNG'))
     @php($unreadAdminNotifications = $area === 'admin' && auth()->check() && auth()->user()->canAccessBackOffice('notifications.view') ? \App\Models\AdminNotification::unread()->count() : 0)
     @php($unreadClientNotifications = $area === 'dashboard' && auth()->check() ? \App\Models\ClientNotification::visibleInDashboard()->where('user_id', auth()->id())->unread()->count() : 0)
+    @php($currentClientSubscription = $area === 'dashboard' && auth()->check() ? auth()->user()->activeSubscription() : null)
 
     <aside class="admin-sidebar">
         <a href="{{ route($area . '.dashboard') }}" class="sky-brand" style="margin-bottom:28px;">
@@ -67,6 +70,11 @@
         @endif
         @if($area === 'admin' && auth()->user()->canAccessBackOffice('subscriptions.view'))
             <a href="{{ route('admin.subscriptions.index') }}" class="menu-link {{ request()->is('admin/subscriptions*') ? 'active' : '' }}">
+                <i class="bi bi-gem"></i> {{ __('ui.common.subscriptions') }}
+            </a>
+        @endif
+        @if($area === 'dashboard')
+            <a href="{{ route('dashboard.subscriptions.index') }}" class="menu-link {{ request()->is('dashboard/subscriptions*') ? 'active' : '' }}">
                 <i class="bi bi-gem"></i> {{ __('ui.common.subscriptions') }}
             </a>
         @endif
@@ -130,6 +138,12 @@
                     <i class="bi bi-moon-stars-fill theme-icon-light"></i>
                     <i class="bi bi-sun-fill theme-icon-dark"></i>
                 </button>
+                @if($area === 'dashboard' && $currentClientSubscription && $currentClientSubscription->plan)
+                    <a href="{{ route('dashboard.subscriptions.index') }}" class="top-subscription-pill">
+                        <i class="bi bi-gem"></i>
+                        <span>{{ __('ui.subscriptions_page.plan_names.' . $currentClientSubscription->plan->slug) }}</span>
+                    </a>
+                @endif
                 <span class="badge text-bg-primary">{{ auth()->user()->roleLabel() }}</span>
                 @if($area === 'admin' && auth()->user()->canAccessBackOffice('notifications.view'))
                     <a href="{{ route('admin.notifications.index') }}" class="position-relative theme-link-icon">

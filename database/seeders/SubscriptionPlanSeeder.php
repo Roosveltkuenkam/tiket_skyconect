@@ -13,16 +13,8 @@ class SubscriptionPlanSeeder extends Seeder
     {
         $plans = [
             [
-                'name' => 'Gratuit',
-                'description' => 'Demarrage simple pour tester SkyConnect.',
-                'monthly_price' => 0,
-                'max_routers' => 1,
-                'max_tickets_per_month' => 100,
-                'max_sales_per_month' => 50,
-            ],
-            [
                 'name' => 'Standard',
-                'description' => 'Offre adaptee aux petits commerces WiFi.',
+                'description' => 'Pour les proprietaires WiFi qui lancent leurs ventes avec un ou plusieurs hotspots.',
                 'monthly_price' => 5000,
                 'max_routers' => 3,
                 'max_tickets_per_month' => 1000,
@@ -53,19 +45,23 @@ class SubscriptionPlanSeeder extends Seeder
             );
         }
 
-        $freePlan = SubscriptionPlan::where('slug', 'gratuit')->first();
+        SubscriptionPlan::where('slug', 'gratuit')->update(['is_active' => false]);
 
-        if ($freePlan) {
-            User::where('role', User::ROLE_CLIENT)->chunk(100, function ($clients) use ($freePlan) {
+        $standardPlan = SubscriptionPlan::where('slug', 'standard')->first();
+
+        if ($standardPlan) {
+            User::where('role', User::ROLE_CLIENT)->chunk(100, function ($clients) use ($standardPlan) {
                 foreach ($clients as $client) {
                     ClientSubscription::firstOrCreate(
                         ['user_id' => $client->id],
                         [
-                            'subscription_plan_id' => $freePlan->id,
-                            'status' => ClientSubscription::STATUS_TRIAL,
+                            'subscription_plan_id' => $standardPlan->id,
+                            'status' => ClientSubscription::STATUS_ACTIVE,
                             'starts_at' => now(),
                             'expires_at' => now()->addDays(30),
-                            'notes' => 'Abonnement gratuit assigne par le seeder.',
+                            'last_payment_amount' => $standardPlan->monthly_price,
+                            'last_payment_status' => 'included',
+                            'notes' => 'Abonnement standard assigne par le seeder.',
                         ]
                     );
                 }

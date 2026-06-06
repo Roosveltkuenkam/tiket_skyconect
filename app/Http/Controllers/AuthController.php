@@ -86,14 +86,14 @@ class AuthController extends Controller
         ]);
 
         $defaultPlan = SubscriptionPlan::firstOrCreate(
-            ['slug' => 'gratuit'],
+            ['slug' => 'standard'],
             [
-                'name' => 'Gratuit',
-                'description' => 'Demarrage simple pour tester SkyConnect.',
-                'monthly_price' => 0,
-                'max_routers' => 1,
-                'max_tickets_per_month' => 100,
-                'max_sales_per_month' => 50,
+                'name' => 'Standard',
+                'description' => 'Pour les proprietaires WiFi qui lancent leurs ventes avec un ou plusieurs hotspots.',
+                'monthly_price' => 5000,
+                'max_routers' => 3,
+                'max_tickets_per_month' => 1000,
+                'max_sales_per_month' => 500,
                 'is_active' => true,
             ]
         );
