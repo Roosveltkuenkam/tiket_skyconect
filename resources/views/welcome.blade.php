@@ -12,8 +12,8 @@
                 {{ __('ui.landing.hero_copy') }}
             </p>
             <div class="sky-actions">
-                <a href="{{ route('plans.index') }}" class="sky-btn"><i class="bi bi-wifi"></i> {{ __('ui.landing.buy_ticket') }}</a>
-                <a href="#plans" class="sky-btn-outline"><i class="bi bi-grid-3x3-gap"></i> {{ __('ui.landing.view_plans') }}</a>
+                <a href="{{ route('register') }}" class="sky-btn"><i class="bi bi-person-plus"></i> {{ __('ui.landing.create_account') }}</a>
+                <a href="{{ route('login') }}" class="sky-btn-outline"><i class="bi bi-box-arrow-in-right"></i> {{ __('ui.landing.sign_in') }}</a>
             </div>
         </div>
 
@@ -29,16 +29,80 @@
             <div class="phone-mockup">
                 <div class="phone-screen">
                     <div class="ticket-mini">
-                        <strong>Ticket 24h</strong>
-                        <div class="plan-price">500 <span>FCFA</span></div>
+                        <strong>{{ __('ui.landing.dashboard_preview') }}</strong>
+                        <div class="plan-price">42 <span>{{ __('ui.landing.sales_today_short') }}</span></div>
                         <div class="mini-lines">
                             <span></span>
                             <span></span>
                             <span></span>
                         </div>
                     </div>
-                    <div class="sky-btn" style="margin-top:20px;width:100%;">{{ __('ui.landing.activate_pass') }}</div>
+                    <div class="sky-btn" style="margin-top:20px;width:100%;">{{ __('ui.landing.manage_sales') }}</div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="sky-section">
+        <div class="sky-container">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow"><span class="eyebrow-dot"></span> {{ __('ui.landing.platform_scope') }}</span>
+                    <h2 class="section-title">{{ __('ui.landing.manage_title') }}</h2>
+                </div>
+                <p class="section-copy">{{ __('ui.landing.manage_copy') }}</p>
+            </div>
+
+            <div class="feature-grid">
+                @foreach(__('ui.landing.owner_features') as $feature)
+                    <div class="premium-card">
+                        <h3><i class="bi {{ $feature['icon'] }}"></i> {{ $feature['title'] }}</h3>
+                        <p class="section-copy">{{ $feature['copy'] }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section class="sky-section">
+        <div class="sky-container">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow"><span class="eyebrow-dot"></span> {{ __('ui.landing.for_whom') }}</span>
+                    <h2 class="section-title">{{ __('ui.landing.for_whom_title') }}</h2>
+                </div>
+                <p class="section-copy">{{ __('ui.landing.for_whom_copy') }}</p>
+            </div>
+
+            <div class="plans-grid">
+                @foreach(__('ui.landing.audiences') as $audience)
+                    <article class="plan-card">
+                        <div class="plan-duration"><i class="bi {{ $audience['icon'] }}"></i> {{ $audience['title'] }}</div>
+                        <p class="section-copy">{{ $audience['copy'] }}</p>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section class="sky-section">
+        <div class="sky-container">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow"><span class="eyebrow-dot"></span> {{ __('ui.landing.how_it_works') }}</span>
+                    <h2 class="section-title">{{ __('ui.landing.how_it_works_title') }}</h2>
+                </div>
+                <p class="section-copy">{{ __('ui.landing.how_it_works_copy') }}</p>
+            </div>
+
+            <div class="feature-grid">
+                @foreach(__('ui.landing.steps') as $index => $step)
+                    <div class="premium-card">
+                        <span class="eyebrow"><span class="eyebrow-dot"></span> {{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                        <h3>{{ $step['title'] }}</h3>
+                        <p class="section-copy">{{ $step['copy'] }}</p>
+                    </div>
+                @endforeach
             </div>
         </div>
     </section>
@@ -54,20 +118,14 @@
             </div>
 
             <div class="plans-grid">
-                @foreach([
-                    ['name' => 'Ticket 5h', 'price' => '250', 'duration' => '5 heures'],
-                    ['name' => 'Ticket 24h', 'price' => '500', 'duration' => '24 heures'],
-                    ['name' => 'Ticket 3 jours', 'price' => '1000', 'duration' => '3 jours'],
-                    ['name' => 'Ticket 7 jours', 'price' => '1850', 'duration' => '7 jours'],
-                    ['name' => 'Ticket 30 jours', 'price' => '5000', 'duration' => '30 jours'],
-                ] as $plan)
+                @foreach(__('ui.landing.demo_plans') as $plan)
                     <article class="plan-card">
                         <div class="plan-duration">{{ $plan['name'] }}</div>
                         <div class="plan-price">{{ $plan['price'] }} <span>FCFA</span></div>
                         <ul class="plan-list">
-                            <li>{{ $plan['duration'] }} de connexion</li>
-                            <li>Code livre instantanement</li>
-                            <li>Compatible portail captif</li>
+                            <li>{{ __('ui.landing.plan_benefit_duration', ['duration' => $plan['duration']]) }}</li>
+                            <li>{{ __('ui.landing.plan_benefit_delivery') }}</li>
+                            <li>{{ __('ui.landing.plan_benefit_portal') }}</li>
                         </ul>
                         <a href="{{ route('plans.index') }}" class="sky-btn" style="margin-top:auto;">{{ __('ui.nav.buy') }}</a>
                     </article>
@@ -128,7 +186,7 @@
                 <p class="section-copy">{{ __('ui.landing.mobile_copy') }}</p>
             </div>
             <div class="mobile-grid">
-                @foreach(['Splash', 'Achat ticket', 'Paiement', 'Historique', 'Profil'] as $screen)
+                @foreach(__('ui.landing.mobile_screens') as $screen)
                     <div class="mobile-card">
                         <div class="mobile-screen">
                             <div>
