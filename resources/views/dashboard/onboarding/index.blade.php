@@ -42,7 +42,7 @@
 
                                 @if(! empty($step['sale_link']))
                                     <div class="mt-3">
-                                        <label class="form-label">{{ __('ui.dashboard_pages.sale_link_ready') }}</label>
+                                        <label class="form-label">{{ __('ui.dashboard_pages.portal_link_ready') }}</label>
                                         <div class="input-group">
                                             <input class="form-control" id="saleLinkInput" value="{{ $step['sale_link'] }}" readonly>
                                             <button class="btn btn-outline-primary" type="button" onclick="navigator.clipboard && navigator.clipboard.writeText(document.getElementById('saleLinkInput').value)">
@@ -85,7 +85,7 @@
                 {{ __('ui.dashboard_pages.objective_copy') }}
             </p>
             @if($saleLink)
-                <a href="{{ $saleLink }}" class="sky-btn w-100" target="_blank">{{ __('ui.dashboard_pages.test_sale_link') }}</a>
+                <a href="{{ $saleLink }}" class="sky-btn w-100" target="_blank">{{ __('ui.dashboard_pages.test_portal_link') }}</a>
             @else
                 <a href="{{ route('dashboard.routers.create') }}" class="sky-btn w-100">{{ __('ui.dashboard_pages.start') }}</a>
             @endif

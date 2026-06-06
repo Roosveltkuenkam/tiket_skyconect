@@ -7,6 +7,7 @@ use App\Models\Router;
 use App\Models\Ticket;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardTicketController extends Controller
 {
@@ -34,6 +35,25 @@ class DashboardTicketController extends Controller
             ->paginate(20)
             ->appends($request->query());
 
+        $ticketTotalCount = Ticket::whereHas('plan.router', function ($routerQuery) use ($request) {
+                $routerQuery->where('user_id', $request->user()->id);
+            })
+            ->count();
+
+        $planStockCards = Plan::with('router')
+            ->withCount([
+                'tickets as total_tickets_count',
+                'tickets as available_tickets_count' => function ($query) {
+                    $query->where('status', 'available');
+                },
+            ])
+            ->whereHas('router', function ($query) use ($request) {
+                $query->where('user_id', $request->user()->id);
+            })
+            ->orderBy('name')
+            ->get();
+
+        $importLots = $this->importLots($request);
         $canViewPasswords = true;
 
         return view('admin.tickets.index', compact(
@@ -41,6 +61,9 @@ class DashboardTicketController extends Controller
             'plans',
             'routers',
             'clients',
+            'ticketTotalCount',
+            'planStockCards',
+            'importLots',
             'canViewPasswords'
         ));
     }
@@ -192,6 +215,33 @@ class DashboardTicketController extends Controller
             ->when($request->filled('status'), function ($query) use ($request) {
                 $query->where('status', $request->status);
             });
+    }
+
+    private function importLots(Request $request)
+    {
+        return Ticket::query()
+            ->join('plans', 'plans.id', '=', 'tickets.plan_id')
+            ->join('routers', 'routers.id', '=', 'plans.router_id')
+            ->where('routers.user_id', $request->user()->id)
+            ->selectRaw("
+                COALESCE(tickets.import_batch, CONCAT('LEGACY-', plans.id, '-', DATE_FORMAT(tickets.created_at, '%Y%m%d%H%i'))) as lot,
+                plans.name as plan_name,
+                plans.price as plan_price,
+                routers.name as router_name,
+                COUNT(*) as total_count,
+                SUM(CASE WHEN tickets.status = 'available' THEN 1 ELSE 0 END) as available_count,
+                SUM(CASE WHEN tickets.status = 'sold' THEN 1 ELSE 0 END) as sold_count,
+                MIN(tickets.created_at) as imported_at
+            ")
+            ->groupBy(
+                DB::raw("COALESCE(tickets.import_batch, CONCAT('LEGACY-', plans.id, '-', DATE_FORMAT(tickets.created_at, '%Y%m%d%H%i')))"),
+                'plans.name',
+                'plans.price',
+                'routers.name'
+            )
+            ->orderByDesc('imported_at')
+            ->limit(20)
+            ->get();
     }
 
     private function ensureTicketAccess(Ticket $ticket)

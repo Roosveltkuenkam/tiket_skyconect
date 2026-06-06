@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AdminNotification;
 use App\Models\Order;
 use App\Models\Plan;
+use App\Services\SettingManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -40,6 +41,7 @@ class OrderController extends Controller
             'customer_phone' => $request->customer_phone,
             'amount' => $plan->price,
             'status' => 'pending',
+            'expires_at' => now()->addMinutes($this->orderExpirationMinutes()),
         ]);
 
         return redirect()->route('orders.show', $order->publicRouteParameters());
@@ -49,7 +51,17 @@ class OrderController extends Controller
     {
         abort_unless($order->hasValidPublicAccessToken($accessToken), 404);
 
+        if ($order->isExpired()) {
+            $order->expire();
+            $order->refresh();
+        }
+
         return view('orders.show', compact('order'));
+    }
+
+    private function orderExpirationMinutes()
+    {
+        return max(1, (int) SettingManager::get('sales.order_expiration_minutes', 15));
     }
 
     private function ensureOwnerCanSell(Plan $plan)

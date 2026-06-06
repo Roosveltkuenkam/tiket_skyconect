@@ -19,9 +19,35 @@ class PaymentController extends Controller
             return redirect()->route('tickets.show', $order->publicRouteParameters());
         }
 
+        if ($order->isExpired()) {
+            $order->expire();
+            ActivityLogger::log('order.expired_before_payment', $order, [
+                'order_reference' => $order->reference,
+                'expires_at' => optional($order->expires_at)->toDateTimeString(),
+            ]);
+
+            abort(403, 'Cette commande a expire. Veuillez creer une nouvelle commande.');
+        }
+
         $payment = null;
 
         DB::transaction(function () use ($order, &$payment) {
+            $order = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+
+            if ($order->status === 'paid') {
+                return;
+            }
+
+            if ($order->isExpired()) {
+                $order->expire();
+                ActivityLogger::log('order.expired_before_payment', $order, [
+                    'order_reference' => $order->reference,
+                    'expires_at' => optional($order->expires_at)->toDateTimeString(),
+                ]);
+
+                abort(403, 'Cette commande a expire. Veuillez creer une nouvelle commande.');
+            }
+
             $order->load('plan.router.user');
 
             $owner = optional(optional($order->plan)->router)->user;
@@ -74,7 +100,7 @@ class PaymentController extends Controller
                 'status' => 'successful',
                 'paid_at' => now(),
                 'raw_response' => [
-                    'message' => 'Paiement simulé avec succès',
+                    'message' => 'Paiement simule avec succes',
                 ],
             ]);
         });

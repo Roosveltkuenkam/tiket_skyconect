@@ -1,11 +1,20 @@
 @extends('layouts.admin')
 
 @section('content')
+@php
+    $currentArea = $routeArea ?? 'admin';
+@endphp
 <div class="page-header d-flex justify-content-between align-items-center">
     <div>
         <span class="eyebrow"><span class="eyebrow-dot"></span> {{ __('ui.admin_tickets.eyebrow') }}</span>
         <h3>{{ __('ui.admin_tickets.title') }}</h3>
-        <p>{{ ($routeArea ?? 'admin') === 'dashboard' ? __('ui.admin_tickets.dashboard_subtitle') : __('ui.admin_tickets.subtitle') }}</p>
+        <p>
+            @if($currentArea === 'dashboard')
+                {{ $ticketTotalCount ?? $tickets->total() }} ticket(s) en stock
+            @else
+                {{ __('ui.admin_tickets.subtitle') }}
+            @endif
+        </p>
     </div>
 
     <div class="d-flex gap-2">
@@ -13,7 +22,7 @@
             <i class="bi bi-download"></i> {{ __('ui.admin_tickets.export_csv') }}
         </a>
 
-        @if(($routeArea ?? 'admin') === 'dashboard' || auth()->user()->canAccessBackOffice('tickets.manage'))
+        @if($currentArea === 'dashboard' || auth()->user()->canAccessBackOffice('tickets.manage'))
             <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#clearTicketsModal">
                 <i class="bi bi-trash3"></i> {{ __('ui.admin_tickets.clear') }}
             </button>
@@ -32,9 +41,26 @@
     <div class="alert alert-danger">{{ session('error') }}</div>
 @endif
 
+@if($currentArea === 'dashboard' && isset($planStockCards))
+    <div class="ticket-stock-grid mb-4">
+        @foreach($planStockCards as $stockPlan)
+            <div class="ticket-stock-card">
+                <div>
+                    <strong>{{ strtoupper($stockPlan->name) }}</strong>
+                    <span>{{ optional($stockPlan->router)->name ?: '-' }}</span>
+                </div>
+                <div class="text-end">
+                    <strong class="stock-available">{{ $stockPlan->available_tickets_count }}</strong>
+                    <span>{{ $stockPlan->total_tickets_count }} total</span>
+                </div>
+            </div>
+        @endforeach
+    </div>
+@endif
+
 <div class="panel-card mb-4">
     <form method="GET" action="{{ route(($routeArea ?? 'admin') . '.tickets.index') }}" class="row g-3">
-        @if(($routeArea ?? 'admin') === 'admin')
+        @if($currentArea === 'admin')
             <div class="col-md-3">
                 <label class="form-label">{{ __('ui.admin_tickets.client') }}</label>
                 <select name="client_id" class="form-control">
@@ -55,7 +81,7 @@
                 @foreach($routers as $router)
                     <option value="{{ $router->id }}" {{ request('router_id') == $router->id ? 'selected' : '' }}>
                         {{ $router->name }}
-                        @if(($routeArea ?? 'admin') === 'admin')
+                        @if($currentArea === 'admin')
                             - {{ $router->user->name ?? __('ui.admin_tickets.no_client') }}
                         @endif
                     </option>
@@ -190,7 +216,51 @@
     {{ $tickets->links() }}
 </div>
 
-@if(($routeArea ?? 'admin') === 'dashboard' || auth()->user()->canAccessBackOffice('tickets.manage'))
+@if($currentArea === 'dashboard' && isset($importLots))
+    <div class="panel-card mt-4 import-lots-card">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0"><i class="bi bi-box-seam"></i> Lots d'import ({{ $importLots->count() }})</h4>
+            <span class="badge text-bg-info">CSV / Mikhmon</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table import-lots-table">
+                <thead>
+                    <tr>
+                        <th>Lot</th>
+                        <th>Tarif</th>
+                        <th>Routeur</th>
+                        <th>Total</th>
+                        <th>Disponibles</th>
+                        <th>Vendus</th>
+                        <th>Importe le</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($importLots as $lot)
+                        <tr>
+                            <td><strong class="theme-link-icon">{{ $lot->lot }}</strong></td>
+                            <td>
+                                <span class="badge text-bg-info">{{ $lot->plan_name }}</span><br>
+                                <strong>{{ number_format($lot->plan_price, 0, ',', ' ') }} FCFA</strong>
+                            </td>
+                            <td><span class="badge text-bg-light"><i class="bi bi-hdd-network"></i> {{ $lot->router_name }}</span></td>
+                            <td><strong>{{ $lot->total_count }}</strong></td>
+                            <td><span class="badge text-bg-success">{{ $lot->available_count }}</span></td>
+                            <td><strong>{{ $lot->sold_count }}</strong></td>
+                            <td>{{ \Carbon\Carbon::parse($lot->imported_at)->format('d/m/Y H:i') }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">Aucun lot d'import trouve.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endif
+
+@if($currentArea === 'dashboard' || auth()->user()->canAccessBackOffice('tickets.manage'))
 <div class="modal fade" id="clearTicketsModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="border-radius:22px;">

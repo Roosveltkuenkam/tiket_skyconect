@@ -1,6 +1,9 @@
 @extends('layouts.admin')
 
 @section('content')
+@php
+    $currentArea = $routeArea ?? 'admin';
+@endphp
 <div class="page-header d-flex justify-content-between align-items-center">
     <div>
         <span class="eyebrow"><span class="eyebrow-dot"></span> Catalogue</span>
@@ -15,6 +18,10 @@
 
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
+@endif
+
+@if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
 @endif
 
 <div class="row g-3 mb-4">
@@ -56,6 +63,7 @@
                     <th>Stock</th>
                     <th>Statut</th>
                     <th>Lien portail</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -73,7 +81,32 @@
                                 <span class="badge text-bg-danger">Inactif</span>
                             @endif
                         </td>
-                        <td><input class="form-control" value="{{ route('orders.create', $plan) }}" readonly></td>
+                        <td>
+                            <input class="form-control" value="{{ $plan->router && $plan->router->public_slug ? route('portal.show', $plan->router->public_slug) : route('orders.create', $plan) }}" readonly>
+                        </td>
+                        <td class="d-flex gap-1 flex-wrap">
+                            @if($currentArea === 'dashboard')
+                                <a href="{{ route('dashboard.plans.edit', $plan) }}" class="btn btn-sm btn-outline-warning" title="Modifier">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="POST" action="{{ route('dashboard.plans.toggle', $plan) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button class="btn btn-sm {{ $plan->is_active ? 'btn-outline-secondary' : 'btn-outline-success' }}" title="{{ $plan->is_active ? 'Desactiver' : 'Activer' }}">
+                                        <i class="bi {{ $plan->is_active ? 'bi-pause-circle' : 'bi-play-circle' }}"></i>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('dashboard.plans.destroy', $plan) }}" onsubmit="return confirm('Supprimer ce forfait ? Cette action est bloquee si des tickets ou ventes existent.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            @else
+                                -
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
             </tbody>

@@ -27,16 +27,19 @@ class DashboardOnboardingController extends Controller
             })
             ->count();
 
-        $firstReadyPlan = (clone $plansQuery)
-            ->where('is_active', true)
-            ->whereHas('tickets', function ($query) {
-                $query->where('status', 'available');
+        $firstReadyRouter = Router::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->whereHas('plans', function ($query) {
+                $query->where('is_active', true)
+                    ->whereHas('tickets', function ($ticketQuery) {
+                        $ticketQuery->where('status', 'available');
+                    });
             })
             ->oldest()
             ->first();
 
         $paymentConfigured = true;
-        $saleLink = $firstReadyPlan ? route('orders.create', $firstReadyPlan) : null;
+        $saleLink = $firstReadyRouter ? $firstReadyRouter->publicPortalUrl() : null;
 
         $steps = [
             [
@@ -76,8 +79,8 @@ class DashboardOnboardingController extends Controller
                 'description' => __('ui.dashboard_pages.steps.sale_link_description'),
                 'done' => (bool) $saleLink,
                 'done_label' => __('ui.dashboard_pages.steps.sale_link_done'),
-                'action_label' => __('ui.dashboard_pages.steps.plans_action'),
-                'action_url' => route('dashboard.plans.index'),
+                'action_label' => __('ui.dashboard_pages.steps.portal_action'),
+                'action_url' => $saleLink ?: route('dashboard.plans.index'),
                 'sale_link' => $saleLink,
             ],
         ];

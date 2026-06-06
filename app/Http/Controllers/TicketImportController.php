@@ -67,6 +67,7 @@ class TicketImportController extends Controller
         $imported = 0;
         $skipped = 0;
         $lineNumber = 0;
+        $importBatch = now()->format('ymdHis') . strtoupper(substr(md5((string) microtime(true)), 0, 4));
 
         while (($row = fgetcsv($file, 1000, ',')) !== false) {
             $lineNumber++;
@@ -94,6 +95,7 @@ class TicketImportController extends Controller
                 'username' => $username,
                 'password' => $password,
                 'profile' => $profile,
+                'import_batch' => $importBatch,
                 'status' => 'available',
             ]);
 
@@ -104,6 +106,7 @@ class TicketImportController extends Controller
 
         ActivityLogger::log('tickets.imported', Plan::class, [
             'plan_id' => $request->plan_id,
+            'import_batch' => $importBatch,
             'imported' => $imported,
             'skipped' => $skipped,
         ], $request);

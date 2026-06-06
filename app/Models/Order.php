@@ -15,6 +15,11 @@ class Order extends Model
         'customer_phone',
         'amount',
         'status',
+        'expires_at',
+    ];
+
+    protected $casts = [
+        'expires_at' => 'datetime',
     ];
 
     public function plan()
@@ -47,6 +52,28 @@ class Order extends Model
     public function publicRouteParameters()
     {
         return [$this->reference, $this->public_access_token];
+    }
+
+    public function isExpired()
+    {
+        return $this->status === 'pending'
+            && $this->expires_at
+            && $this->expires_at->isPast();
+    }
+
+    public function expire()
+    {
+        if (! $this->isExpired()) {
+            return false;
+        }
+
+        $this->update(['status' => 'cancelled']);
+
+        $this->payment()
+            ->where('status', 'pending')
+            ->update(['status' => 'cancelled']);
+
+        return true;
     }
 
     use HasFactory;

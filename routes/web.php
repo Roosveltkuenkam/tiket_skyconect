@@ -32,6 +32,7 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\PortalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketImportController;
@@ -58,6 +59,9 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout');
 
 Route::get('/forfaits', [PlanController::class, 'index'])->name('plans.index');
+
+Route::get('/portal/{router:public_slug}', [PortalController::class, 'show'])
+    ->name('portal.show');
 
 Route::get('/acheter/forfait/{plan:slug}', [OrderController::class, 'create'])
     ->name('orders.create');
@@ -265,10 +269,18 @@ Route::middleware(['auth', 'dashboard_user', 'interface.context'])
         Route::get('/routers', [DashboardRouterController::class, 'index'])->name('routers.index');
         Route::get('/routers/create', [DashboardRouterController::class, 'create'])->name('routers.create');
         Route::post('/routers', [DashboardRouterController::class, 'store'])->name('routers.store');
+        Route::get('/routers/{router}/edit', [DashboardRouterController::class, 'edit'])->name('routers.edit');
+        Route::put('/routers/{router}', [DashboardRouterController::class, 'update'])->name('routers.update');
+        Route::patch('/routers/{router}/deactivate', [DashboardRouterController::class, 'deactivate'])->name('routers.deactivate');
+        Route::delete('/routers/{router}', [DashboardRouterController::class, 'destroy'])->name('routers.destroy');
 
         Route::get('/plans', [DashboardPlanController::class, 'index'])->name('plans.index');
         Route::get('/plans/create', [DashboardPlanController::class, 'create'])->name('plans.create');
         Route::post('/plans', [DashboardPlanController::class, 'store'])->name('plans.store');
+        Route::get('/plans/{plan}/edit', [DashboardPlanController::class, 'edit'])->name('plans.edit');
+        Route::put('/plans/{plan}', [DashboardPlanController::class, 'update'])->name('plans.update');
+        Route::patch('/plans/{plan}/toggle', [DashboardPlanController::class, 'toggle'])->name('plans.toggle');
+        Route::delete('/plans/{plan}', [DashboardPlanController::class, 'destroy'])->name('plans.destroy');
 
         Route::get('/tickets', [DashboardTicketController::class, 'index'])->name('tickets.index');
         Route::get('/tickets/export', [DashboardTicketController::class, 'export'])->name('tickets.export');
