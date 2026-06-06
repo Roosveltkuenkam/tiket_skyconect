@@ -23,6 +23,7 @@ use App\Http\Controllers\DashboardPaymentController;
 use App\Http\Controllers\DashboardSettingsController;
 use App\Http\Controllers\DashboardSupportController;
 use App\Http\Controllers\LegalPageController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PlanController;
@@ -33,6 +34,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/langue/{locale}', [LocaleController::class, 'set'])->name('locale.switch');
 
 Route::get('/conditions-generales', [LegalPageController::class, 'terms'])->name('legal.terms');
 Route::get('/confidentialite', [LegalPageController::class, 'privacy'])->name('legal.privacy');

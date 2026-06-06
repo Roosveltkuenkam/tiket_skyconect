@@ -34,7 +34,7 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <span class="eyebrow"><span class="eyebrow-dot"></span> Demande</span>
-                    <h4 style="font-family:Poppins, sans-serif;color:#0d47a1;">{{ number_format($refund->amount, 0, ',', ' ') }} XAF</h4>
+                    <h4 class="theme-link-icon" style="font-family:Poppins, sans-serif;">{{ number_format($refund->amount, 0, ',', ' ') }} XAF</h4>
                 </div>
                 @include('admin.refunds.partials.status-badge', ['status' => $refund->status])
             </div>

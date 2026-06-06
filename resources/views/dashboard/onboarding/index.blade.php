@@ -3,12 +3,12 @@
 @section('content')
 <div class="page-header d-flex justify-content-between align-items-center">
     <div>
-        <span class="eyebrow"><span class="eyebrow-dot"></span> Premiere vente</span>
-        <h3>Onboarding SkyConnect</h3>
-        <p>Suivez les etapes essentielles pour vendre votre premier ticket Wi-Fi.</p>
+        <span class="eyebrow"><span class="eyebrow-dot"></span> {{ __('ui.dashboard_pages.first_sale') }}</span>
+        <h3>{{ __('ui.dashboard_pages.onboarding_title') }}</h3>
+        <p>{{ __('ui.dashboard_pages.onboarding_subtitle') }}</p>
     </div>
     <div class="text-end">
-        <div class="stat-title">Progression</div>
+        <div class="stat-title">{{ __('ui.dashboard_pages.progress') }}</div>
         <div class="stat-value">{{ $progress }}%</div>
     </div>
 </div>
@@ -17,8 +17,8 @@
     <div class="col-lg-8">
         <div class="panel-card">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="mb-0">Checklist de lancement</h4>
-                <span class="badge text-bg-primary">{{ $completedSteps }}/{{ count($steps) }} etapes</span>
+                <h4 class="mb-0">{{ __('ui.dashboard_pages.launch_checklist') }}</h4>
+                <span class="badge text-bg-primary">{{ __('ui.dashboard_pages.steps_count', ['completed' => $completedSteps, 'total' => count($steps)]) }}</span>
             </div>
 
             <div class="progress mb-4" style="height:12px;border-radius:999px;">
@@ -34,19 +34,19 @@
                                     @if($step['done'])
                                         <span class="badge text-bg-success">{{ $step['done_label'] }}</span>
                                     @else
-                                        <span class="badge text-bg-secondary">Etape {{ $index + 1 }}</span>
+                                        <span class="badge text-bg-secondary">{{ __('ui.dashboard_pages.step', ['number' => $index + 1]) }}</span>
                                     @endif
-                                    <strong style="color:#0f2747;">{{ $step['title'] }}</strong>
+                                    <strong>{{ $step['title'] }}</strong>
                                 </div>
                                 <p class="section-copy mb-0">{{ $step['description'] }}</p>
 
                                 @if(! empty($step['sale_link']))
                                     <div class="mt-3">
-                                        <label class="form-label">Lien de vente pret</label>
+                                        <label class="form-label">{{ __('ui.dashboard_pages.sale_link_ready') }}</label>
                                         <div class="input-group">
                                             <input class="form-control" id="saleLinkInput" value="{{ $step['sale_link'] }}" readonly>
                                             <button class="btn btn-outline-primary" type="button" onclick="navigator.clipboard && navigator.clipboard.writeText(document.getElementById('saleLinkInput').value)">
-                                                Copier
+                                                {{ __('ui.dashboard_pages.copy') }}
                                             </button>
                                         </div>
                                     </div>
@@ -64,31 +64,30 @@
 
     <div class="col-lg-4">
         <div class="panel-card mb-4">
-            <h4>Etat de votre espace</h4>
+            <h4>{{ __('ui.dashboard_pages.space_status') }}</h4>
             <div class="ticket-mini">
-                <div class="stat-title">Routeurs</div>
+                <div class="stat-title">{{ __('ui.common.routers') }}</div>
                 <div class="stat-value">{{ $routersCount }}</div>
             </div>
             <div class="ticket-mini mt-3">
-                <div class="stat-title">Forfaits</div>
+                <div class="stat-title">{{ __('ui.nav.plans') }}</div>
                 <div class="stat-value">{{ $plansCount }}</div>
             </div>
             <div class="ticket-mini mt-3">
-                <div class="stat-title">Tickets disponibles</div>
+                <div class="stat-title">{{ __('ui.admin_dashboard.tickets_available') }}</div>
                 <div class="stat-value">{{ $availableTicketsCount }}</div>
             </div>
         </div>
 
         <div class="panel-card">
-            <h4>Objectif</h4>
+            <h4>{{ __('ui.dashboard_pages.objective') }}</h4>
             <p class="section-copy">
-                Une fois le lien de vente pret, placez-le dans votre portail captif MikroTik.
-                Le client achete, paie, puis recoit son code de connexion.
+                {{ __('ui.dashboard_pages.objective_copy') }}
             </p>
             @if($saleLink)
-                <a href="{{ $saleLink }}" class="sky-btn w-100" target="_blank">Tester le lien de vente</a>
+                <a href="{{ $saleLink }}" class="sky-btn w-100" target="_blank">{{ __('ui.dashboard_pages.test_sale_link') }}</a>
             @else
-                <a href="{{ route('dashboard.routers.create') }}" class="sky-btn w-100">Demarrer</a>
+                <a href="{{ route('dashboard.routers.create') }}" class="sky-btn w-100">{{ __('ui.dashboard_pages.start') }}</a>
             @endif
         </div>
     </div>

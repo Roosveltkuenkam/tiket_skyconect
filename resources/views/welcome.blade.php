@@ -1,20 +1,19 @@
 @extends('layouts.public')
 
-@section('title', 'SkyConnect - Internet rapide partout')
+@section('title', __('ui.landing.title'))
 
 @section('content')
 <main>
     <section class="sky-container sky-hero">
         <div>
-            <span class="eyebrow"><span class="eyebrow-dot"></span> Tickets Wi-Fi instantanes</span>
-            <h1>Internet rapide partout avec SkyConnect</h1>
+            <span class="eyebrow"><span class="eyebrow-dot"></span> {{ __('ui.landing.eyebrow') }}</span>
+            <h1>{{ __('ui.landing.hero_title') }}</h1>
             <p class="hero-copy">
-                Achetez votre ticket Wi-Fi en quelques secondes et restez connecte sur vos hotspots preferes. Simple,
-                rapide et pense pour les utilisateurs comme pour les administrateurs de reseaux.
+                {{ __('ui.landing.hero_copy') }}
             </p>
             <div class="sky-actions">
-                <a href="{{ route('plans.index') }}" class="sky-btn"><i class="bi bi-wifi"></i> Acheter un ticket</a>
-                <a href="#plans" class="sky-btn-outline"><i class="bi bi-grid-3x3-gap"></i> Voir les forfaits</a>
+                <a href="{{ route('plans.index') }}" class="sky-btn"><i class="bi bi-wifi"></i> {{ __('ui.landing.buy_ticket') }}</a>
+                <a href="#plans" class="sky-btn-outline"><i class="bi bi-grid-3x3-gap"></i> {{ __('ui.landing.view_plans') }}</a>
             </div>
         </div>
 
@@ -25,8 +24,8 @@
                 <span style="--i:1"></span>
                 <span style="--i:2"></span>
             </div>
-            <div class="floating-chip chip-left"><i class="bi bi-lightning-charge-fill"></i> Paiement rapide</div>
-            <div class="floating-chip chip-right"><i class="bi bi-shield-check"></i> Ticket securise</div>
+            <div class="floating-chip chip-left"><i class="bi bi-lightning-charge-fill"></i> {{ __('ui.landing.fast_payment') }}</div>
+            <div class="floating-chip chip-right"><i class="bi bi-shield-check"></i> {{ __('ui.landing.secure_ticket') }}</div>
             <div class="phone-mockup">
                 <div class="phone-screen">
                     <div class="ticket-mini">
@@ -38,7 +37,7 @@
                             <span></span>
                         </div>
                     </div>
-                    <div class="sky-btn" style="margin-top:20px;width:100%;">Activer le pass</div>
+                    <div class="sky-btn" style="margin-top:20px;width:100%;">{{ __('ui.landing.activate_pass') }}</div>
                 </div>
             </div>
         </div>
@@ -48,10 +47,10 @@
         <div class="sky-container">
             <div class="section-head">
                 <div>
-                    <span class="eyebrow"><span class="eyebrow-dot"></span> Forfaits populaires</span>
-                    <h2 class="section-title">Choisissez votre pass Wi-Fi</h2>
+                    <span class="eyebrow"><span class="eyebrow-dot"></span> {{ __('ui.landing.popular_plans') }}</span>
+                    <h2 class="section-title">{{ __('ui.landing.choose_pass') }}</h2>
                 </div>
-                <p class="section-copy">Des tickets prepayes clairs, accessibles et adaptes aux usages courts comme aux connexions longue duree.</p>
+                <p class="section-copy">{{ __('ui.landing.plans_copy') }}</p>
             </div>
 
             <div class="plans-grid">
@@ -70,7 +69,7 @@
                             <li>Code livre instantanement</li>
                             <li>Compatible portail captif</li>
                         </ul>
-                        <a href="{{ route('plans.index') }}" class="sky-btn" style="margin-top:auto;">Acheter</a>
+                        <a href="{{ route('plans.index') }}" class="sky-btn" style="margin-top:auto;">{{ __('ui.nav.buy') }}</a>
                     </article>
                 @endforeach
             </div>
@@ -81,20 +80,20 @@
         <div class="sky-container">
             <div class="feature-grid">
                 <div class="premium-card">
-                    <h3><i class="bi bi-phone"></i> Mobile Money</h3>
-                    <p class="section-copy">Orange Money, MTN Mobile Money et Campay prets pour un parcours fluide.</p>
+                    <h3><i class="bi bi-phone"></i> {{ __('ui.landing.mobile_money') }}</h3>
+                    <p class="section-copy">{{ __('ui.landing.mobile_money_copy') }}</p>
                 </div>
                 <div class="premium-card">
-                    <h3><i class="bi bi-router"></i> Hotspots</h3>
-                    <p class="section-copy">Gestion des routeurs, tickets Mikhmon et stocks de connexion.</p>
+                    <h3><i class="bi bi-router"></i> {{ __('ui.landing.hotspots') }}</h3>
+                    <p class="section-copy">{{ __('ui.landing.hotspots_copy') }}</p>
                 </div>
                 <div class="premium-card">
-                    <h3><i class="bi bi-graph-up-arrow"></i> Analytics</h3>
-                    <p class="section-copy">Suivi des ventes, revenus, connexions et performances reseau.</p>
+                    <h3><i class="bi bi-graph-up-arrow"></i> {{ __('ui.landing.analytics') }}</h3>
+                    <p class="section-copy">{{ __('ui.landing.analytics_copy') }}</p>
                 </div>
                 <div class="premium-card">
-                    <h3><i class="bi bi-shield-lock"></i> Securite</h3>
-                    <p class="section-copy">Roles separes, acces client securise et tickets consultables uniquement par leur proprietaire.</p>
+                    <h3><i class="bi bi-shield-lock"></i> {{ __('ui.landing.security') }}</h3>
+                    <p class="section-copy">{{ __('ui.landing.security_copy') }}</p>
                 </div>
             </div>
         </div>
@@ -103,17 +102,17 @@
     <section class="sky-section">
         <div class="sky-container form-shell">
             <div>
-                <span class="eyebrow"><span class="eyebrow-dot"></span> Portail captif</span>
-                <h2 class="section-title">Une experience claire au moment de se connecter</h2>
-                <p class="section-copy">Le portail MikroTik peut rester dans le routeur tout en gardant une identite SkyConnect coherente : logo, code ticket et lien d'achat.</p>
+                <span class="eyebrow"><span class="eyebrow-dot"></span> {{ __('ui.landing.captive_portal') }}</span>
+                <h2 class="section-title">{{ __('ui.landing.portal_title') }}</h2>
+                <p class="section-copy">{{ __('ui.landing.portal_copy') }}</p>
             </div>
             <div class="portal-preview">
                 <div class="portal-box">
-                    <img src="{{ asset('images/logo-skyconnect.PNG') }}" alt="SkyConnect" style="width:190px;background:white;border-radius:16px;padding:10px;">
-                    <h3>Bienvenue sur SkyConnect</h3>
-                    <input class="modern-input" style="width:100%;margin:12px 0;" placeholder="Code ticket">
-                    <button class="sky-btn" style="width:100%;">Se connecter</button>
-                    <p style="margin:14px 0 0;">Acheter un ticket</p>
+                    <img src="{{ asset('images/logo-skyconnect.PNG') }}" alt="SkyConnect" class="logo-tile" style="width:190px;border-radius:16px;padding:10px;">
+                    <h3>{{ __('ui.landing.portal_welcome') }}</h3>
+                    <input class="modern-input" style="width:100%;margin:12px 0;" placeholder="{{ __('ui.landing.ticket_code') }}">
+                    <button class="sky-btn" style="width:100%;">{{ __('ui.landing.connect') }}</button>
+                    <p style="margin:14px 0 0;">{{ __('ui.landing.buy_ticket') }}</p>
                 </div>
             </div>
         </div>
@@ -123,10 +122,10 @@
         <div class="sky-container">
             <div class="section-head">
                 <div>
-                    <span class="eyebrow"><span class="eyebrow-dot"></span> Application mobile</span>
-                    <h2 class="section-title">Des ecrans mobiles prets pour une V1</h2>
+                    <span class="eyebrow"><span class="eyebrow-dot"></span> {{ __('ui.landing.mobile_app') }}</span>
+                    <h2 class="section-title">{{ __('ui.landing.mobile_title') }}</h2>
                 </div>
-                <p class="section-copy">Splash screen, achat, paiement, historique et profil utilisateur dans une interface mobile-first.</p>
+                <p class="section-copy">{{ __('ui.landing.mobile_copy') }}</p>
             </div>
             <div class="mobile-grid">
                 @foreach(['Splash', 'Achat ticket', 'Paiement', 'Historique', 'Profil'] as $screen)

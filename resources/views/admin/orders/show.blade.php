@@ -26,7 +26,7 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <span class="eyebrow"><span class="eyebrow-dot"></span> Commande</span>
-                    <h4 style="font-family:Poppins, sans-serif;color:#0d47a1;">{{ $order->reference }}</h4>
+                    <h4 class="theme-link-icon" style="font-family:Poppins, sans-serif;">{{ $order->reference }}</h4>
                 </div>
                 @include('admin.orders.partials.status-badge', ['status' => $order->status])
             </div>

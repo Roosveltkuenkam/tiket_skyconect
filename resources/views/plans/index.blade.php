@@ -1,16 +1,16 @@
 @extends('layouts.public')
 
-@section('title', 'Forfaits Wi-Fi - SkyConnect')
+@section('title', __('ui.plans_page.title'))
 
 @section('content')
 <main class="sky-section">
     <div class="sky-container">
         <div class="section-head">
             <div>
-                <span class="eyebrow"><span class="eyebrow-dot"></span> Forfaits Wi-Fi</span>
-                <h1 class="section-title">Achetez votre ticket en quelques secondes</h1>
+                <span class="eyebrow"><span class="eyebrow-dot"></span> {{ __('ui.plans_page.eyebrow') }}</span>
+                <h1 class="section-title">{{ __('ui.plans_page.heading') }}</h1>
             </div>
-            <p class="section-copy">Selectionnez la duree qui vous convient, payez par Mobile Money, puis recevez votre ticket de connexion.</p>
+            <p class="section-copy">{{ __('ui.plans_page.copy') }}</p>
         </div>
 
         <div class="plans-grid">
@@ -19,12 +19,12 @@
                     <div class="plan-duration">{{ $plan->name }}</div>
                     <div class="plan-price">{{ $plan->price }} <span>FCFA</span></div>
                     <ul class="plan-list">
-                        <li>Duree : {{ $plan->duration }}</li>
-                        <li>{{ $plan->description ?: 'Ticket Wi-Fi prepayé' }}</li>
-                        <li>Livraison instantanee apres paiement</li>
+                        <li>{{ __('ui.plans_page.duration') }} : {{ $plan->duration }}</li>
+                        <li>{{ $plan->description ?: __('ui.plans_page.default_description') }}</li>
+                        <li>{{ __('ui.plans_page.instant_delivery') }}</li>
                     </ul>
                     <a href="{{ route('orders.create', $plan) }}" class="sky-btn" style="margin-top:auto;">
-                        <i class="bi bi-cart-check"></i> Acheter
+                        <i class="bi bi-cart-check"></i> {{ __('ui.nav.buy') }}
                     </a>
                 </article>
             @endforeach

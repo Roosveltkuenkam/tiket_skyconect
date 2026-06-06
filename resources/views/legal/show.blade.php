@@ -12,7 +12,7 @@
         </div>
 
         <div class="panel-card">
-            <div style="white-space:pre-wrap;line-height:1.8;color:#2d3748;">{{ $content }}</div>
+            <div class="legal-content">{{ $content }}</div>
         </div>
     </div>
 </main>

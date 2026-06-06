@@ -61,7 +61,7 @@ class AdminSubscriptionController extends Controller
             'max_sales_per_month' => $plan->max_sales_per_month,
         ], $request);
 
-        return back()->with('success', 'Plan abonnement cree.');
+        return back()->with('success', __('ui.subscriptions_page.messages.plan_created'));
     }
 
     public function assign(Request $request, User $client)
@@ -97,7 +97,7 @@ class AdminSubscriptionController extends Controller
             'last_payment_status' => $subscription->last_payment_status,
         ], $request);
 
-        return back()->with('success', 'Abonnement client mis a jour.');
+        return back()->with('success', __('ui.subscriptions_page.messages.subscription_updated'));
     }
 
     public function suspend(Request $request, ClientSubscription $subscription)
@@ -109,7 +109,7 @@ class AdminSubscriptionController extends Controller
             'subscription_plan_id' => $subscription->subscription_plan_id,
         ], $request);
 
-        return back()->with('success', 'Abonnement suspendu.');
+        return back()->with('success', __('ui.subscriptions_page.messages.suspended'));
     }
 
     public function reactivate(Request $request, ClientSubscription $subscription)
@@ -121,16 +121,16 @@ class AdminSubscriptionController extends Controller
             'subscription_plan_id' => $subscription->subscription_plan_id,
         ], $request);
 
-        return back()->with('success', 'Abonnement reactive.');
+        return back()->with('success', __('ui.subscriptions_page.messages.reactivated'));
     }
 
     private function statuses()
     {
         return [
-            ClientSubscription::STATUS_TRIAL => 'Essai',
-            ClientSubscription::STATUS_ACTIVE => 'Actif',
-            ClientSubscription::STATUS_EXPIRED => 'Expire',
-            ClientSubscription::STATUS_SUSPENDED => 'Suspendu',
+            ClientSubscription::STATUS_TRIAL => __('ui.subscriptions_page.statuses.trial'),
+            ClientSubscription::STATUS_ACTIVE => __('ui.subscriptions_page.statuses.active'),
+            ClientSubscription::STATUS_EXPIRED => __('ui.subscriptions_page.statuses.expired'),
+            ClientSubscription::STATUS_SUSPENDED => __('ui.subscriptions_page.statuses.suspended'),
         ];
     }
 }

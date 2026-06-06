@@ -63,7 +63,7 @@
                     <tr>
                         <td><strong>{{ $plan->name }}</strong><br><small>#{{ $plan->id }}</small></td>
                         <td><span class="badge text-bg-info">{{ $plan->router->name ?? 'Aucun routeur' }}</span></td>
-                        <td><strong style="color:#0d47a1;">{{ $plan->price }} XAF</strong></td>
+                        <td><strong class="theme-link-icon">{{ $plan->price }} XAF</strong></td>
                         <td><span class="badge text-bg-warning">{{ $plan->duration }}</span></td>
                         <td><span class="badge text-bg-primary">{{ \App\Models\Ticket::where('plan_id', $plan->id)->where('status', 'available')->count() }}</span></td>
                         <td>

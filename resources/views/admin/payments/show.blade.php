@@ -34,7 +34,7 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <span class="eyebrow"><span class="eyebrow-dot"></span> Transaction</span>
-                    <h4 style="font-family:Poppins, sans-serif;color:#0d47a1;">{{ strtoupper($payment->provider) }}</h4>
+                    <h4 class="theme-link-icon" style="font-family:Poppins, sans-serif;">{{ strtoupper($payment->provider) }}</h4>
                 </div>
                 @include('admin.payments.partials.status-badge', ['status' => $payment->status])
             </div>

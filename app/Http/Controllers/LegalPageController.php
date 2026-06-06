@@ -9,16 +9,16 @@ class LegalPageController extends Controller
     public function terms()
     {
         return view('legal.show', [
-            'title' => 'Conditions generales',
-            'content' => SettingManager::get('legal.terms', 'Conditions generales SkyConnect a completer.'),
+            'title' => __('ui.legal.terms_title'),
+            'content' => SettingManager::get('legal.terms', SettingManager::defaultTerms()),
         ]);
     }
 
     public function privacy()
     {
         return view('legal.show', [
-            'title' => 'Politique de confidentialite',
-            'content' => SettingManager::get('legal.privacy', 'Politique de confidentialite SkyConnect a completer.'),
+            'title' => __('ui.legal.privacy_title'),
+            'content' => SettingManager::get('legal.privacy', SettingManager::defaultPrivacy()),
         ]);
     }
 }

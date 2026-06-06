@@ -29,7 +29,7 @@ class AuthController extends Controller
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()
-                ->withErrors(['email' => 'Identifiants invalides.'])
+                ->withErrors(['email' => __('auth.failed')])
                 ->onlyInput('email');
         }
 
@@ -66,6 +66,9 @@ class AuthController extends Controller
             'city' => 'nullable|string|max:255',
             'country' => 'nullable|string|max:255',
             'password' => 'required|string|min:8|confirmed',
+            'terms_accepted' => 'accepted',
+        ], [
+            'terms_accepted.accepted' => __('validation.accepted', ['attribute' => __('ui.auth.terms')]),
         ]);
 
         $user = User::create([

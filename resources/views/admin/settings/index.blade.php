@@ -48,7 +48,7 @@
                                 @elseif($definition['type'] === 'file')
                                     @if($value)
                                         <div class="mb-2">
-                                            <img src="{{ asset($value) }}" alt="Logo actuel" style="max-width:190px;background:white;border-radius:12px;padding:8px;border:1px solid #dbe7f3;">
+                                            <img src="{{ asset($value) }}" alt="Logo actuel" class="logo-tile" style="max-width:190px;border-radius:12px;padding:8px;">
                                         </div>
                                     @endif
                                     <input type="file" name="logo" class="form-control" accept="image/*">
