@@ -12,6 +12,7 @@ class Ticket extends Model
         'username',
         'password',
         'profile',
+        'import_batch',
         'status',
         'sold_at',
     ];

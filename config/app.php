@@ -80,7 +80,15 @@ return [
     |
     */
 
-    'locale' => 'en',
+    'locale' => 'fr',
+
+    'supported_locales' => [
+        'fr' => 'Francais',
+        'en' => 'English',
+        'it' => 'Italiano',
+    ],
+
+    'default_country' => env('APP_DEFAULT_COUNTRY', 'Cameroun'),
 
     /*
     |--------------------------------------------------------------------------
@@ -93,7 +101,7 @@ return [
     |
     */
 
-    'fallback_locale' => 'en',
+    'fallback_locale' => 'fr',
 
     /*
     |--------------------------------------------------------------------------

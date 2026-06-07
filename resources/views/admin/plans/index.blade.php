@@ -1,15 +1,18 @@
 @extends('layouts.admin')
 
 @section('content')
-
+@php
+    $currentArea = $routeArea ?? 'admin';
+@endphp
 <div class="page-header d-flex justify-content-between align-items-center">
     <div>
-        <h3>Tarifs</h3>
-        <p>{{ $plans->count() }} tarif(s)</p>
+        <span class="eyebrow"><span class="eyebrow-dot"></span> Catalogue</span>
+        <h3>Plans Wi-Fi</h3>
+        <p>{{ $plans->count() }} plan(s) disponibles pour le portail captif.</p>
     </div>
 
-    <a href="{{ route('admin.plans.create') }}" class="sky-btn">
-        + Ajouter un tarif
+    <a href="{{ route(($routeArea ?? 'admin') . '.plans.create') }}" class="sky-btn">
+        <i class="bi bi-plus-circle"></i> Ajouter un plan
     </a>
 </div>
 
@@ -17,99 +20,97 @@
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif
 
-<div class="alert alert-info">
-    <strong>Comment fonctionnent les tarifs ?</strong><br>
-    Chaque tarif génère un lien de paiement direct à placer sur le portail captif.
-</div>
+@if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
+@endif
 
-<div class="row mb-4">
+<div class="row g-3 mb-4">
     <div class="col-md-3">
         <div class="stat-card">
+            <div class="stat-title">Total plans</div>
             <div class="stat-value">{{ $plans->count() }}</div>
-            <div class="stat-title">Total tarifs</div>
         </div>
     </div>
-
     <div class="col-md-3">
         <div class="stat-card">
+            <div class="stat-title">Plans actifs</div>
             <div class="stat-value">{{ $plans->where('is_active', true)->count() }}</div>
-            <div class="stat-title">Actifs</div>
         </div>
     </div>
-
     <div class="col-md-3">
         <div class="stat-card">
-            <div class="stat-value">{{ \App\Models\Ticket::where('status', 'available')->count() }}</div>
             <div class="stat-title">Tickets disponibles</div>
+            <div class="stat-value">{{ $ticketsAvailableCount }}</div>
         </div>
     </div>
-
     <div class="col-md-3">
         <div class="stat-card">
-            <div class="stat-value">{{ $plans->min('price') }} — {{ $plans->max('price') }}</div>
-            <div class="stat-title">Fourchette de prix</div>
+            <div class="stat-title">Prix</div>
+            <div class="stat-value">{{ $plans->min('price') }} - {{ $plans->max('price') }}</div>
         </div>
     </div>
 </div>
 
 <div class="panel-card">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Tarif</th>
-                <th>Routeur</th>
-                <th>Prix</th>
-                <th>Détails</th>
-                <th>Stock</th>
-                <th>Actif</th>
-                <th>Lien</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($plans as $plan)
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>
-                        <strong>{{ strtoupper($plan->name) }}</strong><br>
-                        <small>Ordre : {{ $plan->id }}</small>
-                    </td>
-                    <td>
-                        <span class="badge bg-info text-dark">
-                            {{ $plan->router->name ?? 'Aucun routeur' }}
-                        </span>
-                    </td>
-                    <td>
-                        <strong style="color:#1e9beb;">
-                            {{ $plan->price }} XAF
-                        </strong>
-                    </td>
-
-                    <td>
-                        <span class="badge bg-warning text-dark">
-                            {{ $plan->duration }}
-                        </span>
-                    </td>
-
-                    <td>
-                        <span class="badge bg-info text-dark">
-                            {{ \App\Models\Ticket::where('plan_id', $plan->id)->where('status', 'available')->count() }}
-                        </span>
-                    </td>
-
-                    <td>
-                        @if($plan->is_active)
-                            <span class="badge bg-success">Oui</span>
-                        @else
-                            <span class="badge bg-danger">Non</span>
-                        @endif
-                    </td>
-
-                    <td>
-                        <input class="form-control" value="{{ route('orders.create', $plan) }}" readonly>
-                    </td>
+                    <th>Plan</th>
+                    <th>Routeur</th>
+                    <th>Prix</th>
+                    <th>Duree</th>
+                    <th>Stock</th>
+                    <th>Statut</th>
+                    <th>Lien portail</th>
+                    <th>Actions</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach($plans as $plan)
+                    <tr>
+                        <td><strong>{{ $plan->name }}</strong><br><small>#{{ $plan->id }}</small></td>
+                        <td><span class="badge text-bg-info">{{ $plan->router->name ?? 'Aucun routeur' }}</span></td>
+                        <td><strong class="theme-link-icon">{{ $plan->price }} XAF</strong></td>
+                        <td><span class="badge text-bg-warning">{{ $plan->duration }}</span></td>
+                        <td><span class="badge text-bg-primary">{{ $plan->available_tickets_count }}</span></td>
+                        <td>
+                            @if($plan->is_active)
+                                <span class="badge text-bg-success">Actif</span>
+                            @else
+                                <span class="badge text-bg-danger">Inactif</span>
+                            @endif
+                        </td>
+                        <td>
+                            <input class="form-control" value="{{ $plan->router && $plan->router->public_slug ? route('portal.show', $plan->router->public_slug) : route('orders.create', $plan) }}" readonly>
+                        </td>
+                        <td class="d-flex gap-1 flex-wrap">
+                            @if($currentArea === 'dashboard')
+                                <a href="{{ route('dashboard.plans.edit', $plan) }}" class="btn btn-sm btn-outline-warning" title="Modifier">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="POST" action="{{ route('dashboard.plans.toggle', $plan) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button class="btn btn-sm {{ $plan->is_active ? 'btn-outline-secondary' : 'btn-outline-success' }}" title="{{ $plan->is_active ? 'Desactiver' : 'Activer' }}">
+                                        <i class="bi {{ $plan->is_active ? 'bi-pause-circle' : 'bi-play-circle' }}"></i>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('dashboard.plans.destroy', $plan) }}" onsubmit="return confirm('Supprimer ce forfait ? Cette action est bloquee si des tickets ou ventes existent.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            @else
+                                -
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 </div>
-
 @endsection

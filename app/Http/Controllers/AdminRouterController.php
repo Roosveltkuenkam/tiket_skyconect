@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Router;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Services\ActivityLogger;
 
 class AdminRouterController extends Controller
 {
     public function index()
     {
-        $routers = Router::latest()->get();
+        $routers = Router::latest()
+            ->get();
 
         return view('admin.routers.index', compact('routers'));
     }
@@ -31,7 +33,8 @@ class AdminRouterController extends Controller
             'status' => 'required',
         ]);
 
-        Router::create([
+        $router = Router::create([
+            'user_id' => null,
             'name' => $request->name,
             'location' => $request->location,
             'dns' => $request->dns,
@@ -41,7 +44,14 @@ class AdminRouterController extends Controller
             'integration_key' => strtoupper(Str::random(8)),
         ]);
 
+        ActivityLogger::log('router.created', $router, [
+            'name' => $router->name,
+            'owner_id' => $router->user_id,
+            'status' => $router->status,
+            'platform' => $router->platform,
+        ], $request);
+
         return redirect()->route('admin.routers.index')
-            ->with('success', 'Routeur ajouté avec succès.');
+            ->with('success', 'Routeur ajoute avec succes.');
     }
 }

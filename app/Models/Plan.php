@@ -26,15 +26,33 @@ class Plan extends Model
 
         static::creating(function ($plan) {
             if (empty($plan->slug)) {
-                $plan->slug = Str::slug($plan->name);
+                $plan->slug = static::uniqueSlug($plan->name);
             }
         });
 
         static::updating(function ($plan) {
             if ($plan->isDirty('name')) {
-                $plan->slug = Str::slug($plan->name);
+                $plan->slug = static::uniqueSlug($plan->name, $plan->id);
             }
         });
+    }
+
+    protected static function uniqueSlug($name, $ignoreId = null)
+    {
+        $baseSlug = Str::slug($name) ?: 'forfait';
+        $slug = $baseSlug;
+        $suffix = 2;
+
+        while (static::where('slug', $slug)
+            ->when($ignoreId, function ($query) use ($ignoreId) {
+                $query->where('id', '!=', $ignoreId);
+            })
+            ->exists()) {
+            $slug = $baseSlug . '-' . $suffix;
+            $suffix++;
+        }
+
+        return $slug;
     }
 
     public function tickets()

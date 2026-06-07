@@ -1,171 +1,184 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
-    <title>SkyConnect Admin</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ __('ui.common.dashboard') }} - SkyConnect</title>
+    @php($platformLogo = \App\Services\SettingManager::get('platform.logo_path', 'images/logo-skyconnect.PNG'))
+    <link rel="icon" type="image/png" href="{{ asset($platformLogo) }}">
+    <link rel="apple-touch-icon" href="{{ asset($platformLogo) }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/skyconnect.css') }}">
-    <style>
-        body {
-            background: #f5f8fb;
-            font-family: Arial, sans-serif;
-        }
-
-        .sidebar {
-            width: 250px;
-            min-height: 100vh;
-            background: white;
-            border-right: 1px solid #e5e7eb;
-            position: fixed;
-            left: 0;
-            top: 0;
-            padding: 25px 18px;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #00b8b8;
-            margin-bottom: 35px;
-        }
-
-        .menu-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 13px 15px;
-            margin-bottom: 8px;
-            color: #334155;
-            text-decoration: none;
-            border-radius: 25px;
-            font-size: 15px;
-        }
-
-        .menu-link:hover,
-        .menu-link.active {
-            background: #dff8fa;
-            color: #00a6a6;
-        }
-
-        .main {
-            margin-left: 250px;
-            padding: 25px 30px;
-        }
-
-        .topbar {
-            height: 65px;
-            background: white;
-            border-radius: 18px;
-            padding: 15px 25px;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .page-header {
-            background: #dff8fa;
-            border-radius: 22px;
-            padding: 25px;
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 22px;
-            padding: 25px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            min-height: 140px;
-        }
-
-        .stat-title {
-            color: #64748b;
-            font-size: 15px;
-            font-weight: bold;
-        }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: bold;
-            color: #0f172a;
-        }
-
-        .panel-card {
-            background: white;
-            border-radius: 22px;
-            padding: 25px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-
-        .table thead {
-            background: #00a99d;
-            color: white;
-        }
-
-        .badge-paid {
-            background: #d1fae5;
-            color: #059669;
-        }
-
-        .badge-pending {
-            background: #fef3c7;
-            color: #d97706;
-        }
-    </style>
+    <script>
+        (function () {
+            var theme = localStorage.getItem('skyconnect-theme');
+            if (! theme && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                theme = 'dark';
+            }
+            document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light');
+        })();
+    </script>
+    <link rel="stylesheet" href="{{ asset('skyconnect.css') }}">
 </head>
-<body>
+<body class="admin-shell">
+    @php($area = $routeArea ?? 'admin')
+    @php($platformName = \App\Services\SettingManager::get('platform.name', 'SkyConnect'))
+    @php($unreadAdminNotifications = $area === 'admin' && auth()->check() && auth()->user()->canAccessBackOffice('notifications.view') ? \App\Models\AdminNotification::unread()->count() : 0)
+    @php($unreadClientNotifications = $area === 'dashboard' && auth()->check() ? \App\Models\ClientNotification::visibleInDashboard()->where('user_id', auth()->id())->unread()->count() : 0)
+    @php($currentClientSubscription = $area === 'dashboard' && auth()->check() ? auth()->user()->activeSubscription() : null)
 
-    <aside class="sidebar">
-        <div class="logo">
-            <img src="{{ asset('images/logo-skyconnect.png') }}" alt="SkyConnect" style="width:170px;">        </div>
-
-        <a href="{{ route('admin.dashboard') }}" class="menu-link active">
-            <i class="bi bi-grid"></i> Tableau de bord
+    <aside class="admin-sidebar">
+        <a href="{{ route($area . '.dashboard') }}" class="sky-brand" style="margin-bottom:28px;">
+            <img src="{{ asset($platformLogo) }}" alt="{{ $platformName }}">
         </a>
 
-        <a href="{{ route('admin.routers.index') }}" class="menu-link">
-            <i class="bi bi-router"></i> Routeurs
+        <a href="{{ route($area . '.dashboard') }}" class="menu-link {{ request()->is($area) || request()->is($area . '/*') && request()->segment(2) === null ? 'active' : '' }}">
+            <i class="bi bi-grid-1x2-fill"></i> {{ __('ui.common.dashboard') }}
         </a>
+        @if($area === 'dashboard')
+            <a href="{{ route('dashboard.onboarding.index') }}" class="menu-link {{ request()->is('dashboard/onboarding*') ? 'active' : '' }}">
+                <i class="bi bi-rocket-takeoff-fill"></i> {{ __('ui.common.onboarding') }}
+            </a>
+        @endif
+        @if($area === 'dashboard' || auth()->user()->canAccessBackOffice('plans.manage'))
+            <a href="{{ route($area . '.plans.index') }}" class="menu-link {{ request()->is($area . '/plans') || request()->is($area . '/tarifs*') ? 'active' : '' }}">
+                <i class="bi bi-tags-fill"></i> {{ __('ui.nav.plans') }}
+            </a>
+        @endif
+        @if($area === 'dashboard' || auth()->user()->canAccessBackOffice('tickets.view'))
+            <a href="{{ route($area . '.tickets.index') }}" class="menu-link {{ request()->is($area . '/tickets*') ? 'active' : '' }}">
+                <i class="bi bi-ticket-perforated-fill"></i> {{ __('ui.common.tickets') }}
+            </a>
+        @endif
+        @if($area === 'dashboard' || auth()->user()->canAccessBackOffice('orders.view'))
+            <a href="{{ route($area . '.orders.index') }}" class="menu-link {{ request()->is($area . '/orders*') ? 'active' : '' }}">
+                <i class="bi bi-cart-check-fill"></i> {{ __('ui.common.orders') }}
+            </a>
+        @endif
+        @if($area === 'dashboard' || auth()->user()->canAccessBackOffice('payments.view'))
+            <a href="{{ route($area . '.payments.index') }}" class="menu-link {{ request()->is($area . '/payments*') ? 'active' : '' }}">
+                <i class="bi bi-credit-card-2-front-fill"></i> {{ __('ui.common.payments') }}
+            </a>
+        @endif
+        @if($area === 'admin' && auth()->user()->canAccessBackOffice('refunds.view'))
+            <a href="{{ route('admin.refunds.index') }}" class="menu-link {{ request()->is('admin/refunds*') ? 'active' : '' }}">
+                <i class="bi bi-arrow-counterclockwise"></i> {{ __('ui.common.refunds') }}
+            </a>
+        @endif
+        @if($area === 'admin' && auth()->user()->canAccessBackOffice('subscriptions.view'))
+            <a href="{{ route('admin.subscriptions.index') }}" class="menu-link {{ request()->is('admin/subscriptions*') ? 'active' : '' }}">
+                <i class="bi bi-gem"></i> {{ __('ui.common.subscriptions') }}
+            </a>
+        @endif
+        @if($area === 'dashboard')
+            <a href="{{ route('dashboard.subscriptions.index') }}" class="menu-link {{ request()->is('dashboard/subscriptions*') ? 'active' : '' }}">
+                <i class="bi bi-gem"></i> {{ __('ui.common.subscriptions') }}
+            </a>
+        @endif
+        @if($area === 'admin' && auth()->user()->canAccessBackOffice('client_notifications.view'))
+            <a href="{{ route('admin.client_notifications.index') }}" class="menu-link {{ request()->is('admin/client-notifications*') ? 'active' : '' }}">
+                <i class="bi bi-envelope-paper-fill"></i> {{ __('ui.common.client_messages') }}
+            </a>
+        @endif
+        @if($area === 'admin' && auth()->user()->canAccessBackOffice('audit.view'))
+            <a href="{{ route('admin.audit.index') }}" class="menu-link {{ request()->is('admin/audit*') ? 'active' : '' }}">
+                <i class="bi bi-shield-lock-fill"></i> {{ __('ui.common.audit') }}
+            </a>
+        @endif
+        @if($area === 'admin' && auth()->user()->canAccessBackOffice('reports.view'))
+            <a href="{{ route('admin.reports.finance') }}" class="menu-link {{ request()->is('admin/reports*') ? 'active' : '' }}">
+                <i class="bi bi-bar-chart-fill"></i> {{ __('ui.common.reports') }}
+            </a>
+        @endif
+        @if($area === 'admin' && auth()->user()->canAccessBackOffice('support.view'))
+            <a href="{{ route('admin.support.index') }}" class="menu-link {{ request()->is('admin/support*') ? 'active' : '' }}">
+                <i class="bi bi-life-preserver"></i> {{ __('ui.nav.support') }}
+            </a>
+        @endif
+        @if($area === 'dashboard' || auth()->user()->canAccessBackOffice('routers.manage'))
+            <a href="{{ route($area . '.routers.index') }}" class="menu-link {{ request()->is($area . '/routers*') || request()->is($area . '/routeurs*') ? 'active' : '' }}">
+                <i class="bi bi-router-fill"></i> {{ __('ui.common.routers') }}
+            </a>
+        @endif
+        @if($area === 'admin' && auth()->user()->canAccessBackOffice('clients.view'))
+            <a href="{{ route('admin.clients.index') }}" class="menu-link {{ request()->is('admin/clients*') ? 'active' : '' }}">
+                <i class="bi bi-people-fill"></i> {{ __('ui.common.clients') }}
+            </a>
+        @endif
 
-        <a href="{{ route('admin.plans.index') }}" class="menu-link">
-            <i class="bi bi-tags"></i> Tarifs
-        </a>
+        @if($area === 'dashboard')
+            <a href="{{ route('dashboard.support.index') }}" class="menu-link {{ request()->is('dashboard/support*') ? 'active' : '' }}">
+                <i class="bi bi-life-preserver"></i> {{ __('ui.nav.support') }}
+            </a>
+            <a href="{{ route('dashboard.settings.index') }}" class="menu-link">
+                <i class="bi bi-gear-fill"></i> {{ __('ui.common.settings') }}
+            </a>
+        @else
+            @if(auth()->user()->canAccessBackOffice('settings.manage'))
+                <a href="{{ route('admin.settings.index') }}" class="menu-link {{ request()->is('admin/settings*') ? 'active' : '' }}">
+                    <i class="bi bi-gear-fill"></i> {{ __('ui.common.settings') }}
+                </a>
+            @endif
+        @endif
 
-        <a href="{{ route('admin.tickets.index') }}" class="menu-link">
-            <i class="bi bi-ticket-perforated"></i> Tickets
-        </a>
-
-        <a href="#" class="menu-link">
-            <i class="bi bi-cart-check"></i> Ventes
-        </a>
-
-        <a href="#" class="menu-link">
-            <i class="bi bi-wallet2"></i> Paiements
-        </a>
-
-        <a href="#" class="menu-link">
-            <i class="bi bi-gear"></i> Paramètres
-        </a>
     </aside>
 
-    <main class="main">
-        <div class="topbar">
+    <main class="admin-main">
+        <div class="admin-topbar">
             <div>
-                <i class="bi bi-list fs-4"></i>
+                <strong>{{ $area === 'admin' ? __('ui.common.global_backoffice') : __('ui.common.owner_space') }}</strong>
+                <div class="text-muted" style="font-size:14px;">{{ $platformName }} {{ __('ui.common.enterprise_console') }}</div>
             </div>
-
-            <div>
-                <span class="badge bg-info text-dark">STANDARD</span>
-                <span class="ms-3">Français</span>
-                <i class="bi bi-bell ms-3"></i>
-                <i class="bi bi-person-circle ms-3 fs-4"></i>
+            <div class="d-flex align-items-center gap-3">
+                @include('partials.language-switcher')
+                <button type="button" class="theme-toggle" data-theme-toggle aria-label="{{ __('ui.common.change_theme') }}">
+                    <i class="bi bi-moon-stars-fill theme-icon-light"></i>
+                    <i class="bi bi-sun-fill theme-icon-dark"></i>
+                </button>
+                @if($area === 'dashboard' && $currentClientSubscription && $currentClientSubscription->plan)
+                    <a href="{{ route('dashboard.subscriptions.index') }}" class="top-subscription-pill">
+                        <i class="bi bi-gem"></i>
+                        <span>{{ __('ui.subscriptions_page.plan_names.' . $currentClientSubscription->plan->slug) }}</span>
+                    </a>
+                @endif
+                <span class="badge text-bg-primary">{{ auth()->user()->roleLabel() }}</span>
+                @if($area === 'admin' && auth()->user()->canAccessBackOffice('notifications.view'))
+                    <a href="{{ route('admin.notifications.index') }}" class="position-relative theme-link-icon">
+                        <i class="bi bi-bell fs-5"></i>
+                        @if($unreadAdminNotifications > 0)
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-danger">{{ $unreadAdminNotifications }}</span>
+                        @endif
+                    </a>
+                @elseif($area === 'dashboard')
+                    <a href="{{ route('dashboard.notifications.index') }}" class="position-relative theme-link-icon">
+                        <i class="bi bi-bell fs-5"></i>
+                        @if($unreadClientNotifications > 0)
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-danger">{{ $unreadClientNotifications }}</span>
+                        @endif
+                    </a>
+                @else
+                    <i class="bi bi-bell fs-5 theme-link-icon"></i>
+                @endif
+                <a href="{{ route($area . '.profile.edit') }}" class="theme-link-icon" title="{{ __('ui.profile.title') }}" aria-label="{{ __('ui.profile.title') }}">
+                    <i class="bi bi-person-circle fs-3"></i>
+                </a>
+                <form method="POST" action="{{ route('logout') }}" class="m-0">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>{{ __('ui.common.logout') }}</span>
+                    </button>
+                </form>
             </div>
         </div>
 
         @yield('content')
     </main>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('theme.js') }}"></script>
 </body>
 </html>
