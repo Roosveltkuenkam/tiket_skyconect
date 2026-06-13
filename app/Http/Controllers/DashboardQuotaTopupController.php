@@ -47,7 +47,7 @@ class DashboardQuotaTopupController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'amount' => 'required|integer|min:100',
+            'amount' => 'required|integer|min:' . max(100, (int) SettingManager::get('quota.minimum_topup', 1000)),
             'method' => 'required|string|max:100',
             'phone' => 'nullable|string|max:50',
             'external_reference' => 'nullable|string|max:255',

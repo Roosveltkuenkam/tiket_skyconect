@@ -6,6 +6,8 @@ use App\Models\Order;
 use App\Models\Plan;
 use App\Models\Router;
 use App\Models\Ticket;
+use App\Services\QuotaManager;
+use App\Services\SettingManager;
 use Illuminate\Http\Request;
 
 class DashboardDashboardController extends Controller
@@ -109,6 +111,15 @@ class DashboardDashboardController extends Controller
             'progress' => (int) round(($completed / 5) * 100),
         ];
 
+        $quotaWallet = QuotaManager::walletFor($request->user());
+        $quotaMethods = $this->quotaMethods();
+        $quotaRate = QuotaManager::rate();
+        $quotaMinimumTopup = max(100, (int) SettingManager::get('quota.minimum_topup', 1000));
+        $quotaValidity = optional($request->user()->activeSubscription())->expires_at;
+        $quotaSalesCapacity = $quotaRate > 0
+            ? (int) floor(((int) $quotaWallet->quota_balance) * 100 / $quotaRate)
+            : (int) $quotaWallet->quota_balance;
+
         $globalStats = null;
         $lowStockPlans = collect();
         $newClients = collect();
@@ -129,7 +140,25 @@ class DashboardDashboardController extends Controller
             'globalStats',
             'lowStockPlans',
             'newClients',
-            'onboarding'
+            'onboarding',
+            'quotaWallet',
+            'quotaMethods',
+            'quotaRate',
+            'quotaMinimumTopup',
+            'quotaValidity',
+            'quotaSalesCapacity'
         ));
+    }
+
+    private function quotaMethods()
+    {
+        $raw = (string) SettingManager::get('withdrawals.methods', "Orange Money\nMTN Mobile Money\nVirement bancaire\nCash");
+
+        return collect(preg_split('/\r\n|\r|\n|,/', $raw))
+            ->map(function ($method) {
+                return trim($method);
+            })
+            ->filter()
+            ->values();
     }
 }

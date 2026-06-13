@@ -133,49 +133,49 @@
     </div>
     <div class="col-md-3">
         <div class="stat-card">
-            <div class="stat-title">Quota charge</div>
+            <div class="stat-title">{{ __('ui.finance_report.quota_loaded') }}</div>
             <div class="stat-value">{{ number_format($kpis['Quota charge'], 0, ',', ' ') }} XAF</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card">
-            <div class="stat-title">Quota consomme</div>
+            <div class="stat-title">{{ __('ui.finance_report.quota_consumed') }}</div>
             <div class="stat-value">{{ number_format($kpis['Quota consomme'], 0, ',', ' ') }} XAF</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card">
-            <div class="stat-title">Commissions SkyConnect</div>
+            <div class="stat-title">{{ __('ui.finance_report.skyconnect_commissions') }}</div>
             <div class="stat-value">{{ number_format($kpis['Commissions SkyConnect'], 0, ',', ' ') }} XAF</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card">
-            <div class="stat-title">Retraits demandes</div>
+            <div class="stat-title">{{ __('ui.finance_report.withdrawals_requested') }}</div>
             <div class="stat-value">{{ number_format($kpis['Retraits demandes'], 0, ',', ' ') }} XAF</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card">
-            <div class="stat-title">Retraits traites</div>
+            <div class="stat-title">{{ __('ui.finance_report.withdrawals_processed') }}</div>
             <div class="stat-value">{{ number_format($kpis['Retraits traites'], 0, ',', ' ') }} XAF</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card">
-            <div class="stat-title">Frais de retrait collectes</div>
+            <div class="stat-title">{{ __('ui.finance_report.withdrawal_fees_collected') }}</div>
             <div class="stat-value">{{ number_format($kpis['Frais retrait collectes'], 0, ',', ' ') }} XAF</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card">
-            <div class="stat-title">Solde du aux clients</div>
+            <div class="stat-title">{{ __('ui.finance_report.client_balance_due') }}</div>
             <div class="stat-value">{{ number_format($kpis['Solde du aux clients'], 0, ',', ' ') }} XAF</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card">
-            <div class="stat-title">Solde quota restant</div>
+            <div class="stat-title">{{ __('ui.finance_report.quota_balance_remaining') }}</div>
             <div class="stat-value">{{ number_format($kpis['Solde quota restant'], 0, ',', ' ') }} XAF</div>
         </div>
     </div>
@@ -190,8 +190,8 @@
         __('ui.finance_report.payments_by_provider') => ['rows' => $paymentsByProvider, 'first' => __('ui.finance_report.provider')],
         __('ui.finance_report.refunds_by_status') => ['rows' => $refundsByStatus, 'first' => __('ui.finance_report.status')],
         __('ui.finance_report.subscription_revenue') => ['rows' => $subscriptionRevenueByStatus, 'first' => __('ui.finance_report.status')],
-        'Quota par type' => ['rows' => $quotaByType, 'first' => 'Type'],
-        'Retraits par statut' => ['rows' => $withdrawalsByStatus, 'first' => __('ui.finance_report.status')],
+        __('ui.finance_report.quota_by_type') => ['rows' => $quotaByType, 'first' => __('ui.finance_report.type')],
+        __('ui.finance_report.withdrawals_by_status') => ['rows' => $withdrawalsByStatus, 'first' => __('ui.finance_report.status')],
     ];
 @endphp
 
@@ -232,33 +232,33 @@
 <div class="panel-card mt-4">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-            <h4 class="mb-1">Solde quota et argent du par client</h4>
-            <p class="text-muted mb-0">Vue comptable courante des wallets clients.</p>
+            <h4 class="mb-1">{{ __('ui.finance_report.client_wallet_balances') }}</h4>
+            <p class="text-muted mb-0">{{ __('ui.finance_report.wallet_balances_copy') }}</p>
         </div>
-        <span class="badge bg-light text-dark">{{ $walletBalances->count() }} client(s)</span>
+        <span class="badge bg-light text-dark">{{ __('ui.finance_report.client_count', ['count' => $walletBalances->count()]) }}</span>
     </div>
 
     <div class="table-responsive mt-3">
         <table class="table align-middle">
             <thead>
                 <tr>
-                    <th>Client</th>
-                    <th>Quota restant</th>
-                    <th>Quota charge</th>
-                    <th>Quota consomme</th>
-                    <th>Ventes totales</th>
-                    <th>Solde brut</th>
-                    <th>Retraits attente</th>
-                    <th>Retraits traites</th>
-                    <th>Solde du</th>
-                    <th>Disponible retrait</th>
+                    <th>{{ __('ui.finance_report.client') }}</th>
+                    <th>{{ __('ui.finance_report.quota_remaining') }}</th>
+                    <th>{{ __('ui.finance_report.quota_loaded') }}</th>
+                    <th>{{ __('ui.finance_report.quota_consumed') }}</th>
+                    <th>{{ __('ui.quota.sales') }}</th>
+                    <th>{{ __('ui.finance_report.gross_balance') }}</th>
+                    <th>{{ __('ui.finance_report.pending_withdrawals') }}</th>
+                    <th>{{ __('ui.finance_report.withdrawals_processed') }}</th>
+                    <th>{{ __('ui.finance_report.client_balance_due') }}</th>
+                    <th>{{ __('ui.finance_report.available_withdrawal') }}</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($walletBalances as $wallet)
                     <tr>
                         <td>
-                            <strong>{{ optional($wallet->user)->business_name ?: optional($wallet->user)->name ?: 'Client' }}</strong>
+                            <strong>{{ optional($wallet->user)->business_name ?: optional($wallet->user)->name ?: __('ui.finance_report.unnamed_client') }}</strong>
                             <div class="text-muted small">{{ optional($wallet->user)->email }}</div>
                         </td>
                         <td>{{ number_format($wallet->quota_balance, 0, ',', ' ') }} XAF</td>

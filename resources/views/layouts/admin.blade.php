@@ -63,21 +63,40 @@
                 <i class="bi bi-credit-card-2-front-fill"></i> {{ __('ui.common.payments') }}
             </a>
         @endif
+        @php($quotaMenuOpen = $area === 'admin' && (request()->is('admin/quota-topups*') || request()->is('admin/reports/quota*')))
+        @php($canViewQuotaTopups = $area === 'admin' && auth()->user()->canAccessBackOffice('quota_topups.view'))
+        @php($canViewQuotaReport = $area === 'admin' && auth()->user()->canAccessBackOffice('reports.view'))
+
         @if($area === 'dashboard')
-            <a href="{{ route('dashboard.quota_topups.index') }}" class="menu-link {{ request()->is('dashboard/quota-topups*') ? 'active' : '' }}">
-                <i class="bi bi-wallet2"></i> Quota
-            </a>
             <a href="{{ route('dashboard.withdrawals.index') }}" class="menu-link {{ request()->is('dashboard/withdrawals*') ? 'active' : '' }}">
-                <i class="bi bi-cash-coin"></i> Retraits
+                <i class="bi bi-cash-coin"></i> {{ __('ui.quota.withdrawals') }}
             </a>
-        @elseif(auth()->user()->canAccessBackOffice('quota_topups.view'))
-            <a href="{{ route('admin.quota_topups.index') }}" class="menu-link {{ request()->is('admin/quota-topups*') ? 'active' : '' }}">
-                <i class="bi bi-wallet2"></i> Recharges quota
-            </a>
+        @elseif($canViewQuotaTopups || $canViewQuotaReport)
+            <button type="button"
+                class="menu-link w-100 border-0 text-start {{ $quotaMenuOpen ? 'active' : '' }}"
+                data-bs-toggle="collapse"
+                data-bs-target="#quotaSidebarMenu"
+                aria-expanded="{{ $quotaMenuOpen ? 'true' : 'false' }}"
+                aria-controls="quotaSidebarMenu">
+                <i class="bi bi-wallet2"></i> {{ __('ui.quota.menu') }}
+                <i class="bi bi-chevron-down ms-auto"></i>
+            </button>
+            <div class="collapse {{ $quotaMenuOpen ? 'show' : '' }}" id="quotaSidebarMenu">
+                @if($canViewQuotaTopups)
+                    <a href="{{ route('admin.quota_topups.index') }}" class="menu-link ms-3 {{ request()->is('admin/quota-topups*') ? 'active' : '' }}">
+                        <i class="bi bi-plus-circle"></i> {{ __('ui.quota.topups') }}
+                    </a>
+                @endif
+                @if($canViewQuotaReport)
+                    <a href="{{ route('admin.reports.quota') }}" class="menu-link ms-3 {{ request()->is('admin/reports/quota*') ? 'active' : '' }}">
+                        <i class="bi bi-pie-chart-fill"></i> {{ __('ui.quota.report') }}
+                    </a>
+                @endif
+            </div>
         @endif
         @if($area === 'admin' && auth()->user()->canAccessBackOffice('withdrawals.view'))
             <a href="{{ route('admin.withdrawals.index') }}" class="menu-link {{ request()->is('admin/withdrawals*') ? 'active' : '' }}">
-                <i class="bi bi-cash-coin"></i> Retraits
+                <i class="bi bi-cash-coin"></i> {{ __('ui.quota.withdrawals') }}
             </a>
         @endif
         @if($area === 'admin' && auth()->user()->canAccessBackOffice('refunds.view'))
@@ -106,11 +125,8 @@
             </a>
         @endif
         @if($area === 'admin' && auth()->user()->canAccessBackOffice('reports.view'))
-            <a href="{{ route('admin.reports.finance') }}" class="menu-link {{ request()->is('admin/reports*') ? 'active' : '' }}">
+            <a href="{{ route('admin.reports.finance') }}" class="menu-link {{ request()->is('admin/reports/finance*') ? 'active' : '' }}">
                 <i class="bi bi-bar-chart-fill"></i> {{ __('ui.common.reports') }}
-            </a>
-            <a href="{{ route('admin.reports.quota') }}" class="menu-link {{ request()->is('admin/reports/quota*') ? 'active' : '' }}">
-                <i class="bi bi-pie-chart-fill"></i> Rapport quota
             </a>
         @endif
         @if($area === 'admin' && auth()->user()->canAccessBackOffice('support.view'))

@@ -24,6 +24,66 @@
     </div>
 @endif
 
+@if(isset($quotaWallet))
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="panel-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0"><i class="bi bi-wallet2 me-2"></i>{{ __('ui.quota.credit') }}</h4>
+                    <span class="badge rounded-pill text-bg-success">{{ __('ui.quota.active_sales') }}</span>
+                </div>
+
+                <div class="list-group list-group-flush quota-summary">
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>{{ __('ui.quota.quota_remaining') }}</span>
+                        <strong class="text-success">{{ number_format((int) $quotaSalesCapacity, 0, ',', ' ') }} XAF</strong>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>{{ __('ui.quota.commission') }}</span>
+                        <strong>{{ number_format((float) $quotaRate, 1, ',', ' ') }}%</strong>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>{{ __('ui.quota.minimum_topup') }}</span>
+                        <strong>{{ number_format((int) $quotaMinimumTopup, 0, ',', ' ') }} XAF</strong>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span>{{ __('ui.quota.validity') }}</span>
+                        <strong>{{ $quotaValidity ? $quotaValidity->format('d/m/Y H:i') : '-' }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="panel-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0"><i class="bi bi-credit-card-2-front me-2"></i>{{ __('ui.quota.topup') }}</h4>
+                    <span class="badge rounded-pill text-bg-info">{{ __('ui.quota.secure_payment') }}</span>
+                </div>
+
+                <form method="POST" action="{{ route('dashboard.quota_topups.store') }}" class="row g-3">
+                    @csrf
+                    <input type="hidden" name="method" value="{{ $quotaMethods->first() ?: 'Mobile Money' }}">
+
+                    <div class="col-12">
+                        <label class="form-label">{{ __('ui.quota.amount_xaf') }}</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-wallet2"></i></span>
+                            <input type="number" min="{{ $quotaMinimumTopup }}" step="100" name="amount" class="form-control" value="{{ $quotaMinimumTopup }}" required>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <button class="sky-btn w-100">
+                            <i class="bi bi-credit-card-2-front"></i> {{ __('ui.quota.pay_credit') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endif
+
 @if($globalStats)
     <div class="row g-3 mb-4">
         <div class="col-md-3">

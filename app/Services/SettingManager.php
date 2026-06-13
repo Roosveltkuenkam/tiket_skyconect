@@ -35,6 +35,7 @@ class SettingManager
                     'quota.enabled' => ['label' => 'Activer le systeme de quota', 'type' => 'checkbox', 'default' => 0],
                     'quota.rate' => ['label' => 'Taux quota / commission (%)', 'type' => 'number', 'default' => 10],
                     'quota.minimum_balance' => ['label' => 'Solde minimal conserve', 'type' => 'number', 'default' => 0],
+                    'quota.minimum_topup' => ['label' => 'Montant minimum de recharge', 'type' => 'number', 'default' => 1000],
                 ],
             ],
             'withdrawals' => [
