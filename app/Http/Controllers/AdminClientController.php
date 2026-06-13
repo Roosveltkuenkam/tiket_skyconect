@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Router;
+use App\Models\ClientQuotaTopup;
 use App\Models\SubscriptionPlan;
+use App\Models\WithdrawalRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Services\ActivityLogger;
+use App\Services\QuotaManager;
 
 class AdminClientController extends Controller
 {
@@ -32,6 +35,7 @@ class AdminClientController extends Controller
                 $query->where('is_active', $request->status === 'active');
             })
             ->withCount('routers')
+            ->with('wallet')
             ->latest()
             ->paginate(20)
             ->appends($request->query());
@@ -43,7 +47,13 @@ class AdminClientController extends Controller
     {
         $this->ensureClient($client);
 
-        $client->load(['routers.plans', 'clientSubscription.plan']);
+        $wallet = QuotaManager::walletFor($client);
+
+        $client->load(['routers.plans', 'clientSubscription.plan', 'wallet']);
+        $quotaTransactions = $client->quotaTransactions()
+            ->with(['order', 'creator'])
+            ->latest()
+            ->paginate(10, ['*'], 'quota_page');
 
         $orders = Order::with(['plan.router', 'ticket', 'payment'])
             ->whereHas('plan.router', function ($query) use ($client) {
@@ -58,6 +68,14 @@ class AdminClientController extends Controller
             })
             ->latest()
             ->paginate(10, ['*'], 'payments_page');
+
+        $quotaTopups = ClientQuotaTopup::where('user_id', $client->id)
+            ->latest()
+            ->paginate(10, ['*'], 'topups_page');
+
+        $withdrawals = WithdrawalRequest::where('user_id', $client->id)
+            ->latest()
+            ->paginate(10, ['*'], 'withdrawals_page');
 
         $stats = [
             'routers' => Router::where('user_id', $client->id)->count(),
@@ -79,7 +97,7 @@ class AdminClientController extends Controller
         $roles = User::roleLabels();
         $subscriptionPlans = SubscriptionPlan::where('is_active', true)->orderBy('monthly_price')->get();
 
-        return view('admin.clients.show', compact('client', 'orders', 'payments', 'stats', 'roles', 'subscriptionPlans'));
+        return view('admin.clients.show', compact('client', 'orders', 'payments', 'stats', 'roles', 'subscriptionPlans', 'wallet', 'quotaTransactions', 'quotaTopups', 'withdrawals'));
     }
 
     public function updateStatus(Request $request, User $client)
@@ -138,6 +156,35 @@ class AdminClientController extends Controller
 
         return redirect()->route('admin.clients.index')
             ->with('success', 'Role mis a jour.');
+    }
+
+    public function updateQuota(Request $request, User $client)
+    {
+        $this->ensureManagePermission($request);
+        $this->ensureClient($client);
+
+        $data = $request->validate([
+            'operation' => 'required|in:set,credit,debit',
+            'amount' => 'required|integer|min:0',
+            'note' => 'nullable|string|max:500',
+        ]);
+
+        $wallet = QuotaManager::adjustWallet(
+            $client,
+            $data['operation'],
+            (int) $data['amount'],
+            $request->user(),
+            $data['note'] ?? null
+        );
+
+        ActivityLogger::log('client.quota_updated', $client, [
+            'operation' => $data['operation'],
+            'amount' => $data['amount'],
+            'new_balance' => $wallet->quota_balance,
+            'note' => $data['note'] ?? null,
+        ], $request);
+
+        return back()->with('success', 'Solde quota mis a jour.');
     }
 
     private function ensureClient(User $client)

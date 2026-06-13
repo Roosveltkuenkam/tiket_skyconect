@@ -42,6 +42,7 @@
                     <th>Entreprise</th>
                     <th>Telephone</th>
                     <th>Routeurs</th>
+                    <th>Quota</th>
                     <th>Statut</th>
                     <th>Inscription</th>
                     <th>Actions</th>
@@ -57,6 +58,7 @@
                         <td>{{ $client->business_name ?: '-' }}</td>
                         <td>{{ $client->phone ?: '-' }}</td>
                         <td><span class="badge text-bg-primary">{{ $client->routers_count }}</span></td>
+                        <td>{{ number_format((int) optional($client->wallet)->quota_balance, 0, ',', ' ') }} XAF</td>
                         <td>
                             @if($client->is_active)
                                 <span class="badge text-bg-success">Actif</span>
@@ -71,7 +73,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">Aucun client trouve.</td>
+                        <td colspan="8" class="text-center text-muted py-4">Aucun client trouve.</td>
                     </tr>
                 @endforelse
             </tbody>

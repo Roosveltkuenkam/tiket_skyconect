@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\ClientSubscription;
+use App\Models\ClientWallet;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\QuotaTransaction;
 use App\Models\Refund;
 use App\Models\Router;
 use App\Models\User;
+use App\Models\WithdrawalRequest;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +56,9 @@ class AdminFinanceReportController extends Controller
             $this->writeSection($handle, 'Paiements par provider', ['Provider', 'Paiements', 'Montant'], $data['paymentsByProvider']);
             $this->writeSection($handle, 'Remboursements par statut', ['Statut', 'Nombre', 'Montant'], $data['refundsByStatus']);
             $this->writeSection($handle, 'Revenus abonnements', ['Statut', 'Nombre', 'Montant'], $data['subscriptionRevenueByStatus']);
+            $this->writeSection($handle, 'Quota par type', ['Type', 'Operations', 'Montant'], $data['quotaByType']);
+            $this->writeSection($handle, 'Retraits par statut', ['Statut', 'Demandes', 'Montant'], $data['withdrawalsByStatus']);
+            $this->writeWalletBalances($handle, $data['walletBalances']);
 
             fclose($handle);
         }, $fileName, ['Content-Type' => 'text/csv; charset=UTF-8']);
@@ -67,12 +73,32 @@ class AdminFinanceReportController extends Controller
         $payments = $this->paymentsQuery($filters);
         $refunds = $this->refundsQuery($filters);
         $subscriptions = $this->subscriptionsQuery($filters);
+        $quotaTransactions = $this->quotaTransactionsQuery($filters);
+        $withdrawals = $this->withdrawalsQuery($filters);
+        $walletBalances = $this->walletBalances($filters);
 
         $revenue = (clone $paidOrders)->sum('orders.amount');
         $salesCount = (clone $paidOrders)->count();
         $refundsAmount = (clone $refunds)->where('refunds.status', 'processed')->sum('refunds.amount');
         $subscriptionRevenue = (clone $subscriptions)->sum('client_subscriptions.last_payment_amount');
         $commissionAmount = round($revenue * ((float) $filters['commission_rate'] / 100));
+        $quotaLoaded = (clone $quotaTransactions)->where('quota_transactions.type', QuotaTransaction::TYPE_TOPUP)->sum('quota_transactions.amount');
+        $quotaConsumed = (clone $quotaTransactions)->where('quota_transactions.type', QuotaTransaction::TYPE_SALE_COMMISSION)->sum('quota_transactions.amount');
+        $withdrawalsRequested = (clone $withdrawals)
+            ->whereIn('withdrawal_requests.status', [
+                WithdrawalRequest::STATUS_REQUESTED,
+                WithdrawalRequest::STATUS_APPROVED,
+                WithdrawalRequest::STATUS_PROCESSED,
+            ])
+            ->sum('withdrawal_requests.amount_requested');
+        $withdrawalsProcessed = (clone $withdrawals)
+            ->where('withdrawal_requests.status', WithdrawalRequest::STATUS_PROCESSED)
+            ->sum('withdrawal_requests.amount_requested');
+        $withdrawalFees = (clone $withdrawals)
+            ->where('withdrawal_requests.status', WithdrawalRequest::STATUS_PROCESSED)
+            ->sum('withdrawal_requests.fee_amount');
+        $clientBalanceDue = $walletBalances->sum('balance_due');
+        $quotaBalanceRemaining = $walletBalances->sum('quota_balance');
 
         $kpis = [
             'Chiffre affaires ventes' => $revenue,
@@ -86,6 +112,14 @@ class AdminFinanceReportController extends Controller
             'Revenus abonnements' => $subscriptionRevenue,
             'Revenus SkyConnect estimes' => $subscriptionRevenue + $commissionAmount,
             'Solde net estime' => $revenue - $refundsAmount + $subscriptionRevenue,
+            'Quota charge' => $quotaLoaded,
+            'Quota consomme' => $quotaConsumed,
+            'Commissions SkyConnect' => $quotaConsumed,
+            'Retraits demandes' => $withdrawalsRequested,
+            'Retraits traites' => $withdrawalsProcessed,
+            'Frais retrait collectes' => $withdrawalFees,
+            'Solde du aux clients' => $clientBalanceDue,
+            'Solde quota restant' => $quotaBalanceRemaining,
         ];
 
         return [
@@ -101,6 +135,9 @@ class AdminFinanceReportController extends Controller
             'paymentsByProvider' => $this->paymentsByProvider($filters),
             'refundsByStatus' => $this->refundsByStatus($filters),
             'subscriptionRevenueByStatus' => $this->subscriptionRevenueByStatus($filters),
+            'quotaByType' => $this->quotaByType($filters),
+            'withdrawalsByStatus' => $this->withdrawalsByStatus($filters),
+            'walletBalances' => $walletBalances,
         ];
     }
 
@@ -185,6 +222,74 @@ class AdminFinanceReportController extends Controller
             });
     }
 
+    private function quotaTransactionsQuery(array $filters)
+    {
+        return QuotaTransaction::query()
+            ->leftJoin('orders', 'quota_transactions.order_id', '=', 'orders.id')
+            ->leftJoin('plans', 'orders.plan_id', '=', 'plans.id')
+            ->leftJoin('routers', 'plans.router_id', '=', 'routers.id')
+            ->leftJoin('payments', 'quota_transactions.payment_id', '=', 'payments.id')
+            ->whereDate('quota_transactions.created_at', '>=', $filters['date_from'])
+            ->whereDate('quota_transactions.created_at', '<=', $filters['date_to'])
+            ->when($filters['client_id'], function ($query) use ($filters) {
+                $query->where('quota_transactions.user_id', $filters['client_id']);
+            })
+            ->when($filters['router_id'], function ($query) use ($filters) {
+                $query->where('routers.id', $filters['router_id']);
+            })
+            ->when($filters['provider'], function ($query) use ($filters) {
+                $query->where('payments.provider', $filters['provider']);
+            });
+    }
+
+    private function withdrawalsQuery(array $filters)
+    {
+        return WithdrawalRequest::query()
+            ->whereDate('withdrawal_requests.requested_at', '>=', $filters['date_from'])
+            ->whereDate('withdrawal_requests.requested_at', '<=', $filters['date_to'])
+            ->when($filters['client_id'], function ($query) use ($filters) {
+                $query->where('withdrawal_requests.user_id', $filters['client_id']);
+            })
+            ->when($filters['router_id'], function ($query) use ($filters) {
+                $query->whereExists(function ($subQuery) use ($filters) {
+                    $subQuery->select(DB::raw(1))
+                        ->from('routers')
+                        ->whereColumn('routers.user_id', 'withdrawal_requests.user_id')
+                        ->where('routers.id', $filters['router_id']);
+                });
+            });
+    }
+
+    private function walletBalances(array $filters)
+    {
+        return ClientWallet::query()
+            ->with('user')
+            ->when($filters['client_id'], function ($query) use ($filters) {
+                $query->where('client_wallets.user_id', $filters['client_id']);
+            })
+            ->when($filters['router_id'], function ($query) use ($filters) {
+                $query->whereExists(function ($subQuery) use ($filters) {
+                    $subQuery->select(DB::raw(1))
+                        ->from('routers')
+                        ->whereColumn('routers.user_id', 'client_wallets.user_id')
+                        ->where('routers.id', $filters['router_id']);
+                });
+            })
+            ->orderByDesc('total_sales_amount')
+            ->get()
+            ->map(function (ClientWallet $wallet) {
+                $gross = max(0, $wallet->total_sales_amount - $wallet->total_quota_used);
+                $balanceDue = max(0, $gross - $wallet->total_withdrawn);
+                $available = max(0, $balanceDue - $wallet->pending_withdrawal_amount);
+
+                $wallet->gross_client_balance = $gross;
+                $wallet->balance_due = $balanceDue;
+                $wallet->available_withdrawal_balance = $available;
+
+                return $wallet;
+            });
+    }
+
     private function salesByDay(array $filters)
     {
         return $this->ordersQuery($filters)
@@ -255,6 +360,24 @@ class AdminFinanceReportController extends Controller
             ->get();
     }
 
+    private function quotaByType(array $filters)
+    {
+        return $this->quotaTransactionsQuery($filters)
+            ->selectRaw('quota_transactions.type as label, COUNT(*) as count, COALESCE(SUM(quota_transactions.amount), 0) as amount')
+            ->groupBy('quota_transactions.type')
+            ->orderBy('quota_transactions.type')
+            ->get();
+    }
+
+    private function withdrawalsByStatus(array $filters)
+    {
+        return $this->withdrawalsQuery($filters)
+            ->selectRaw('withdrawal_requests.status as label, COUNT(*) as count, COALESCE(SUM(withdrawal_requests.amount_requested), 0) as amount')
+            ->groupBy('withdrawal_requests.status')
+            ->orderBy('withdrawal_requests.status')
+            ->get();
+    }
+
     private function writeSection($handle, $title, array $headers, $rows)
     {
         fputcsv($handle, []);
@@ -263,6 +386,39 @@ class AdminFinanceReportController extends Controller
 
         foreach ($rows as $row) {
             fputcsv($handle, [$row->label, $row->count, $row->amount]);
+        }
+    }
+
+    private function writeWalletBalances($handle, $rows)
+    {
+        fputcsv($handle, []);
+        fputcsv($handle, ['Soldes clients']);
+        fputcsv($handle, [
+            'Client',
+            'Quota restant',
+            'Quota charge',
+            'Quota consomme',
+            'Ventes totales',
+            'Solde brut client',
+            'Retraits en attente',
+            'Retraits traites',
+            'Solde du',
+            'Disponible retrait',
+        ]);
+
+        foreach ($rows as $wallet) {
+            fputcsv($handle, [
+                optional($wallet->user)->business_name ?: optional($wallet->user)->name ?: 'Client',
+                $wallet->quota_balance,
+                $wallet->total_quota_loaded,
+                $wallet->total_quota_used,
+                $wallet->total_sales_amount,
+                $wallet->gross_client_balance,
+                $wallet->pending_withdrawal_amount,
+                $wallet->total_withdrawn,
+                $wallet->balance_due,
+                $wallet->available_withdrawal_balance,
+            ]);
         }
     }
 }

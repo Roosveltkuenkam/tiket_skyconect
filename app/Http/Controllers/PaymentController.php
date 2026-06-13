@@ -7,6 +7,7 @@ use App\Models\AdminNotification;
 use App\Models\Payment;
 use App\Models\Ticket;
 use App\Services\ActivityLogger;
+use App\Services\QuotaManager;
 use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
@@ -81,16 +82,6 @@ class PaymentController extends Controller
                 abort(404, 'Aucun ticket disponible pour ce forfait.');
             }
 
-            $ticket->update([
-                'status' => 'sold',
-                'sold_at' => now(),
-            ]);
-
-            $order->update([
-                'ticket_id' => $ticket->id,
-                'status' => 'paid',
-            ]);
-
             $payment = Payment::create([
                 'order_id' => $order->id,
                 'provider' => 'test',
@@ -102,6 +93,24 @@ class PaymentController extends Controller
                 'raw_response' => [
                     'message' => 'Paiement simule avec succes',
                 ],
+            ]);
+
+            $quotaConsumed = $owner ? QuotaManager::consumeForOrder($order, $owner, $payment) : 0;
+
+            $ticket->update([
+                'status' => 'sold',
+                'sold_at' => now(),
+            ]);
+
+            $order->update([
+                'ticket_id' => $ticket->id,
+                'status' => 'paid',
+            ]);
+
+            $payment->update([
+                'raw_response' => array_merge($payment->raw_response ?: [], [
+                    'quota_consumed' => $quotaConsumed,
+                ]),
             ]);
         });
 

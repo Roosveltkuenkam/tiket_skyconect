@@ -62,7 +62,7 @@
                     <th>Duree</th>
                     <th>Stock</th>
                     <th>Statut</th>
-                    <th>Lien portail</th>
+                    <th>Lien paiement</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -82,7 +82,7 @@
                             @endif
                         </td>
                         <td>
-                            <input class="form-control" value="{{ $plan->router && $plan->router->public_slug ? route('portal.show', $plan->router->public_slug) : route('orders.create', $plan) }}" readonly>
+                            <input class="form-control" value="{{ route('orders.create', $plan) }}" readonly>
                         </td>
                         <td class="d-flex gap-1 flex-wrap">
                             @if($currentArea === 'dashboard')

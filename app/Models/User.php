@@ -34,6 +34,7 @@ class User extends Authenticatable
         'country',
         'role',
         'is_active',
+        'quota_balance',
         'password',
     ];
 
@@ -55,6 +56,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'is_active' => 'boolean',
+        'quota_balance' => 'integer',
     ];
 
     public function isSuperAdmin()
@@ -123,6 +125,10 @@ class User extends Authenticatable
                 'orders.manage',
                 'payments.view',
                 'payments.manage',
+                'quota_topups.view',
+                'quota_topups.manage',
+                'withdrawals.view',
+                'withdrawals.manage',
                 'refunds.view',
                 'refunds.manage',
                 'refunds.export',
@@ -143,6 +149,8 @@ class User extends Authenticatable
                 'orders.view',
                 'tickets.view',
                 'payments.view',
+                'quota_topups.view',
+                'withdrawals.view',
                 'refunds.view',
                 'notifications.view',
                 'client_notifications.view',
@@ -154,6 +162,10 @@ class User extends Authenticatable
                 'orders.view',
                 'payments.view',
                 'payments.export',
+                'quota_topups.view',
+                'quota_topups.manage',
+                'withdrawals.view',
+                'withdrawals.manage',
                 'refunds.view',
                 'refunds.manage',
                 'refunds.export',
@@ -195,6 +207,36 @@ class User extends Authenticatable
     public function clientSubscription()
     {
         return $this->hasOne(ClientSubscription::class);
+    }
+
+    public function wallet()
+    {
+        return $this->hasOne(ClientWallet::class);
+    }
+
+    public function walletTransactions()
+    {
+        return $this->hasMany(ClientWalletTransaction::class);
+    }
+
+    public function quotaTransactions()
+    {
+        return $this->hasMany(QuotaTransaction::class);
+    }
+
+    public function quotaTopups()
+    {
+        return $this->hasMany(ClientQuotaTopup::class);
+    }
+
+    public function withdrawals()
+    {
+        return $this->hasMany(ClientWithdrawal::class);
+    }
+
+    public function withdrawalRequests()
+    {
+        return $this->hasMany(WithdrawalRequest::class);
     }
 
     public function activeSubscription()

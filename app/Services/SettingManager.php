@@ -29,6 +29,25 @@ class SettingManager
                     'sales.platform_fee_percent' => ['label' => 'Frais plateforme (%)', 'type' => 'number', 'default' => 0],
                 ],
             ],
+            'quota' => [
+                'label' => 'Quota clients',
+                'settings' => [
+                    'quota.enabled' => ['label' => 'Activer le systeme de quota', 'type' => 'checkbox', 'default' => 0],
+                    'quota.rate' => ['label' => 'Taux quota / commission (%)', 'type' => 'number', 'default' => 10],
+                    'quota.minimum_balance' => ['label' => 'Solde minimal conserve', 'type' => 'number', 'default' => 0],
+                ],
+            ],
+            'withdrawals' => [
+                'label' => 'Retraits',
+                'settings' => [
+                    'withdrawals.enabled' => ['label' => 'Activer les retraits', 'type' => 'checkbox', 'default' => 0],
+                    'withdrawals.fee_type' => ['label' => 'Type de frais (fixed ou percent)', 'type' => 'text', 'default' => 'fixed'],
+                    'withdrawals.fee_value' => ['label' => 'Valeur des frais', 'type' => 'number', 'default' => 0],
+                    'withdrawals.minimum_amount' => ['label' => 'Montant minimum de retrait', 'type' => 'number', 'default' => 0],
+                    'withdrawals.maximum_amount' => ['label' => 'Montant maximum de retrait', 'type' => 'number', 'default' => null],
+                    'withdrawals.methods' => ['label' => 'Methodes de retrait', 'type' => 'textarea', 'default' => "Orange Money\nMTN Mobile Money\nVirement bancaire\nCash"],
+                ],
+            ],
             'campay' => [
                 'label' => 'Campay',
                 'settings' => [

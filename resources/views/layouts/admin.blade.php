@@ -63,6 +63,23 @@
                 <i class="bi bi-credit-card-2-front-fill"></i> {{ __('ui.common.payments') }}
             </a>
         @endif
+        @if($area === 'dashboard')
+            <a href="{{ route('dashboard.quota_topups.index') }}" class="menu-link {{ request()->is('dashboard/quota-topups*') ? 'active' : '' }}">
+                <i class="bi bi-wallet2"></i> Quota
+            </a>
+            <a href="{{ route('dashboard.withdrawals.index') }}" class="menu-link {{ request()->is('dashboard/withdrawals*') ? 'active' : '' }}">
+                <i class="bi bi-cash-coin"></i> Retraits
+            </a>
+        @elseif(auth()->user()->canAccessBackOffice('quota_topups.view'))
+            <a href="{{ route('admin.quota_topups.index') }}" class="menu-link {{ request()->is('admin/quota-topups*') ? 'active' : '' }}">
+                <i class="bi bi-wallet2"></i> Recharges quota
+            </a>
+        @endif
+        @if($area === 'admin' && auth()->user()->canAccessBackOffice('withdrawals.view'))
+            <a href="{{ route('admin.withdrawals.index') }}" class="menu-link {{ request()->is('admin/withdrawals*') ? 'active' : '' }}">
+                <i class="bi bi-cash-coin"></i> Retraits
+            </a>
+        @endif
         @if($area === 'admin' && auth()->user()->canAccessBackOffice('refunds.view'))
             <a href="{{ route('admin.refunds.index') }}" class="menu-link {{ request()->is('admin/refunds*') ? 'active' : '' }}">
                 <i class="bi bi-arrow-counterclockwise"></i> {{ __('ui.common.refunds') }}
@@ -91,6 +108,9 @@
         @if($area === 'admin' && auth()->user()->canAccessBackOffice('reports.view'))
             <a href="{{ route('admin.reports.finance') }}" class="menu-link {{ request()->is('admin/reports*') ? 'active' : '' }}">
                 <i class="bi bi-bar-chart-fill"></i> {{ __('ui.common.reports') }}
+            </a>
+            <a href="{{ route('admin.reports.quota') }}" class="menu-link {{ request()->is('admin/reports/quota*') ? 'active' : '' }}">
+                <i class="bi bi-pie-chart-fill"></i> Rapport quota
             </a>
         @endif
         @if($area === 'admin' && auth()->user()->canAccessBackOffice('support.view'))

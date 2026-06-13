@@ -53,6 +53,12 @@
                                     @endif
                                     <input type="file" name="logo" class="form-control" accept="image/*">
                                     <small class="text-muted">PNG/JPG, 2 Mo maximum.</small>
+                                @elseif($definition['type'] === 'checkbox')
+                                    <input type="hidden" name="settings[{{ $key }}]" value="0">
+                                    <div class="form-check form-switch">
+                                        <input type="checkbox" name="settings[{{ $key }}]" value="1" class="form-check-input" id="setting-{{ \Illuminate\Support\Str::slug($key) }}" {{ (string) $value === '1' ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="setting-{{ \Illuminate\Support\Str::slug($key) }}">Active</label>
+                                    </div>
                                 @else
                                     <input type="{{ $definition['type'] === 'number' ? 'number' : 'text' }}" name="settings[{{ $key }}]" class="form-control" value="{{ $value }}">
                                 @endif

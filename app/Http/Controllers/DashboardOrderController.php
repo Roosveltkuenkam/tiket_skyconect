@@ -117,7 +117,7 @@ class DashboardOrderController extends Controller
         return $query
             ->leftJoin('payments', 'payments.order_id', '=', 'orders.id')
             ->selectRaw("COALESCE(NULLIF(payments.payment_method, ''), NULLIF(payments.provider, ''), 'simulation') as label, COUNT(*) as count, COALESCE(SUM(orders.amount), 0) as amount")
-            ->groupBy(DB::raw("COALESCE(NULLIF(payments.payment_method, ''), NULLIF(payments.provider, ''), 'simulation')"))
+            ->groupBy('payments.payment_method', 'payments.provider')
             ->orderByDesc('amount')
             ->first();
     }
@@ -183,7 +183,7 @@ class DashboardOrderController extends Controller
         return $query
             ->leftJoin('payments', 'payments.order_id', '=', 'orders.id')
             ->selectRaw("COALESCE(NULLIF(payments.payment_method, ''), NULLIF(payments.provider, ''), 'simulation') as label, COUNT(*) as count, COALESCE(SUM(orders.amount), 0) as amount")
-            ->groupBy(DB::raw("COALESCE(NULLIF(payments.payment_method, ''), NULLIF(payments.provider, ''), 'simulation')"))
+            ->groupBy('payments.payment_method', 'payments.provider')
             ->orderByDesc('amount')
             ->limit(5)
             ->get();

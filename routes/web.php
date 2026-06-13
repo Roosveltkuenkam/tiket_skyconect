@@ -9,12 +9,15 @@ use App\Http\Controllers\AdminFinanceReportController;
 use App\Http\Controllers\AdminNotificationController;
 use App\Http\Controllers\AdminPaymentController;
 use App\Http\Controllers\AdminPlanController;
+use App\Http\Controllers\AdminQuotaTopupController;
+use App\Http\Controllers\AdminQuotaReportController;
 use App\Http\Controllers\AdminRefundController;
 use App\Http\Controllers\AdminRouterController;
 use App\Http\Controllers\AdminSettingController;
 use App\Http\Controllers\AdminSubscriptionController;
 use App\Http\Controllers\AdminSupportController;
 use App\Http\Controllers\AdminTicketController;
+use App\Http\Controllers\AdminWithdrawalController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardClientNotificationController;
 use App\Http\Controllers\DashboardDashboardController;
@@ -22,11 +25,13 @@ use App\Http\Controllers\DashboardOnboardingController;
 use App\Http\Controllers\DashboardOrderController;
 use App\Http\Controllers\DashboardPaymentController;
 use App\Http\Controllers\DashboardPlanController;
+use App\Http\Controllers\DashboardQuotaTopupController;
 use App\Http\Controllers\DashboardRouterController;
 use App\Http\Controllers\DashboardSettingsController;
 use App\Http\Controllers\DashboardSupportController;
 use App\Http\Controllers\DashboardSubscriptionController;
 use App\Http\Controllers\DashboardTicketController;
+use App\Http\Controllers\DashboardWithdrawalController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OrderController;
@@ -99,6 +104,9 @@ Route::middleware(['auth', 'back_office', 'interface.context'])
         Route::get('/reports/finance/export', [AdminFinanceReportController::class, 'export'])
             ->middleware('back_office:reports.export')
             ->name('reports.finance.export');
+        Route::get('/reports/quota', [AdminQuotaReportController::class, 'index'])
+            ->middleware('back_office:reports.view')
+            ->name('reports.quota');
 
         Route::get('/settings', [AdminSettingController::class, 'index'])
             ->middleware('back_office:settings.manage')
@@ -122,6 +130,9 @@ Route::middleware(['auth', 'back_office', 'interface.context'])
         Route::patch('/clients/{client}/role', [AdminClientController::class, 'updateRole'])
             ->middleware('back_office:clients.manage')
             ->name('clients.role');
+        Route::patch('/clients/{client}/quota', [AdminClientController::class, 'updateQuota'])
+            ->middleware('back_office:clients.manage')
+            ->name('clients.quota');
 
         Route::get('/routeurs', [AdminRouterController::class, 'index'])
             ->middleware('back_office:routers.manage')
@@ -187,6 +198,29 @@ Route::middleware(['auth', 'back_office', 'interface.context'])
         Route::post('/payments/{payment}/verify', [AdminPaymentController::class, 'verify'])
             ->middleware('back_office:payments.manage')
             ->name('payments.verify');
+
+        Route::get('/quota-topups', [AdminQuotaTopupController::class, 'index'])
+            ->middleware('back_office:quota_topups.view')
+            ->name('quota_topups.index');
+        Route::patch('/quota-topups/{topup}/approve', [AdminQuotaTopupController::class, 'approve'])
+            ->middleware('back_office:quota_topups.manage')
+            ->name('quota_topups.approve');
+        Route::patch('/quota-topups/{topup}/reject', [AdminQuotaTopupController::class, 'reject'])
+            ->middleware('back_office:quota_topups.manage')
+            ->name('quota_topups.reject');
+
+        Route::get('/withdrawals', [AdminWithdrawalController::class, 'index'])
+            ->middleware('back_office:withdrawals.view')
+            ->name('withdrawals.index');
+        Route::patch('/withdrawals/{withdrawal}/approve', [AdminWithdrawalController::class, 'approve'])
+            ->middleware('back_office:withdrawals.manage')
+            ->name('withdrawals.approve');
+        Route::patch('/withdrawals/{withdrawal}/process', [AdminWithdrawalController::class, 'process'])
+            ->middleware('back_office:withdrawals.manage')
+            ->name('withdrawals.process');
+        Route::patch('/withdrawals/{withdrawal}/reject', [AdminWithdrawalController::class, 'reject'])
+            ->middleware('back_office:withdrawals.manage')
+            ->name('withdrawals.reject');
 
         Route::get('/refunds', [AdminRefundController::class, 'index'])
             ->middleware('back_office:refunds.view')
@@ -293,6 +327,10 @@ Route::middleware(['auth', 'dashboard_user', 'interface.context'])
 
         Route::get('/orders', [DashboardOrderController::class, 'index'])->name('orders.index');
         Route::get('/payments', [DashboardPaymentController::class, 'index'])->name('payments.index');
+        Route::get('/quota-topups', [DashboardQuotaTopupController::class, 'index'])->name('quota_topups.index');
+        Route::post('/quota-topups', [DashboardQuotaTopupController::class, 'store'])->name('quota_topups.store');
+        Route::get('/withdrawals', [DashboardWithdrawalController::class, 'index'])->name('withdrawals.index');
+        Route::post('/withdrawals', [DashboardWithdrawalController::class, 'store'])->name('withdrawals.store');
         Route::get('/subscriptions', [DashboardSubscriptionController::class, 'index'])->name('subscriptions.index');
         Route::post('/subscriptions/{plan:slug}', [DashboardSubscriptionController::class, 'choose'])->name('subscriptions.choose');
         Route::get('/notifications', [DashboardClientNotificationController::class, 'index'])->name('notifications.index');

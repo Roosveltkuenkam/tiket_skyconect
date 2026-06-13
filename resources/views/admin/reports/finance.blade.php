@@ -131,6 +131,54 @@
             <div class="stat-value">{{ number_format($kpis['Revenus SkyConnect estimes'], 0, ',', ' ') }} XAF</div>
         </div>
     </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-title">Quota charge</div>
+            <div class="stat-value">{{ number_format($kpis['Quota charge'], 0, ',', ' ') }} XAF</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-title">Quota consomme</div>
+            <div class="stat-value">{{ number_format($kpis['Quota consomme'], 0, ',', ' ') }} XAF</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-title">Commissions SkyConnect</div>
+            <div class="stat-value">{{ number_format($kpis['Commissions SkyConnect'], 0, ',', ' ') }} XAF</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-title">Retraits demandes</div>
+            <div class="stat-value">{{ number_format($kpis['Retraits demandes'], 0, ',', ' ') }} XAF</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-title">Retraits traites</div>
+            <div class="stat-value">{{ number_format($kpis['Retraits traites'], 0, ',', ' ') }} XAF</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-title">Frais de retrait collectes</div>
+            <div class="stat-value">{{ number_format($kpis['Frais retrait collectes'], 0, ',', ' ') }} XAF</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-title">Solde du aux clients</div>
+            <div class="stat-value">{{ number_format($kpis['Solde du aux clients'], 0, ',', ' ') }} XAF</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-title">Solde quota restant</div>
+            <div class="stat-value">{{ number_format($kpis['Solde quota restant'], 0, ',', ' ') }} XAF</div>
+        </div>
+    </div>
 </div>
 
 @php
@@ -142,6 +190,8 @@
         __('ui.finance_report.payments_by_provider') => ['rows' => $paymentsByProvider, 'first' => __('ui.finance_report.provider')],
         __('ui.finance_report.refunds_by_status') => ['rows' => $refundsByStatus, 'first' => __('ui.finance_report.status')],
         __('ui.finance_report.subscription_revenue') => ['rows' => $subscriptionRevenueByStatus, 'first' => __('ui.finance_report.status')],
+        'Quota par type' => ['rows' => $quotaByType, 'first' => 'Type'],
+        'Retraits par statut' => ['rows' => $withdrawalsByStatus, 'first' => __('ui.finance_report.status')],
     ];
 @endphp
 
@@ -177,5 +227,57 @@
             </div>
         </div>
     @endforeach
+</div>
+
+<div class="panel-card mt-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h4 class="mb-1">Solde quota et argent du par client</h4>
+            <p class="text-muted mb-0">Vue comptable courante des wallets clients.</p>
+        </div>
+        <span class="badge bg-light text-dark">{{ $walletBalances->count() }} client(s)</span>
+    </div>
+
+    <div class="table-responsive mt-3">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Quota restant</th>
+                    <th>Quota charge</th>
+                    <th>Quota consomme</th>
+                    <th>Ventes totales</th>
+                    <th>Solde brut</th>
+                    <th>Retraits attente</th>
+                    <th>Retraits traites</th>
+                    <th>Solde du</th>
+                    <th>Disponible retrait</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($walletBalances as $wallet)
+                    <tr>
+                        <td>
+                            <strong>{{ optional($wallet->user)->business_name ?: optional($wallet->user)->name ?: 'Client' }}</strong>
+                            <div class="text-muted small">{{ optional($wallet->user)->email }}</div>
+                        </td>
+                        <td>{{ number_format($wallet->quota_balance, 0, ',', ' ') }} XAF</td>
+                        <td>{{ number_format($wallet->total_quota_loaded, 0, ',', ' ') }} XAF</td>
+                        <td>{{ number_format($wallet->total_quota_used, 0, ',', ' ') }} XAF</td>
+                        <td>{{ number_format($wallet->total_sales_amount, 0, ',', ' ') }} XAF</td>
+                        <td>{{ number_format($wallet->gross_client_balance, 0, ',', ' ') }} XAF</td>
+                        <td>{{ number_format($wallet->pending_withdrawal_amount, 0, ',', ' ') }} XAF</td>
+                        <td>{{ number_format($wallet->total_withdrawn, 0, ',', ' ') }} XAF</td>
+                        <td><strong>{{ number_format($wallet->balance_due, 0, ',', ' ') }} XAF</strong></td>
+                        <td><strong>{{ number_format($wallet->available_withdrawal_balance, 0, ',', ' ') }} XAF</strong></td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="10" class="text-center text-muted py-4">{{ __('ui.finance_report.no_data') }}</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection
