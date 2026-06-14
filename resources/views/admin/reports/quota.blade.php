@@ -91,8 +91,9 @@
             <tbody>
                 @forelse($walletRows as $wallet)
                     @php
-                        $quotaSalesCapacity = $quotaRate > 0
-                            ? (int) floor(((int) $wallet->quota_balance) * 100 / $quotaRate)
+                        $walletQuotaRate = \App\Services\QuotaManager::rate($wallet->user);
+                        $quotaSalesCapacity = $walletQuotaRate > 0
+                            ? (int) floor(((int) $wallet->quota_balance) * 100 / $walletQuotaRate)
                             : (int) $wallet->quota_balance;
                     @endphp
                     <tr>
@@ -103,7 +104,10 @@
                         <td>{{ number_format((int) $wallet->pending_withdrawal_amount, 0, ',', ' ') }} XAF</td>
                         <td>{{ number_format((int) $wallet->total_withdrawn, 0, ',', ' ') }} XAF</td>
                         <td>{{ number_format((int) $wallet->availableWithdrawalBalance(), 0, ',', ' ') }} XAF</td>
-                        <td><strong>{{ number_format($quotaSalesCapacity, 0, ',', ' ') }} XAF</strong></td>
+                        <td>
+                            <strong>{{ number_format($quotaSalesCapacity, 0, ',', ' ') }} XAF</strong><br>
+                            <small>{{ number_format((float) $walletQuotaRate, 2, ',', ' ') }}%</small>
+                        </td>
                         <td>{{ number_format((int) $wallet->quota_balance, 0, ',', ' ') }} XAF</td>
                     </tr>
                 @empty

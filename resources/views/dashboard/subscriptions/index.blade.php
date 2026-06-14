@@ -50,6 +50,8 @@
                 <div><strong>{{ $plan->max_routers ?? __('ui.subscriptions_page.unlimited') }}</strong><span>{{ __('ui.dashboard_subscriptions.routers') }}</span></div>
                 <div><strong>{{ $plan->max_tickets_per_month ?? __('ui.subscriptions_page.unlimited') }}</strong><span>{{ __('ui.dashboard_subscriptions.tickets') }}</span></div>
                 <div><strong>{{ $plan->max_sales_per_month ?? __('ui.subscriptions_page.unlimited') }}</strong><span>{{ __('ui.dashboard_subscriptions.sales') }}</span></div>
+                <div><strong>{{ number_format((float) ($plan->quota_rate_percent ?? 5), 2, ',', ' ') }}%</strong><span>Taux quota</span></div>
+                <div><strong>{{ number_format((float) ($plan->withdrawal_fee_percent ?? 5), 2, ',', ' ') }}%</strong><span>Frais retrait</span></div>
             </div>
 
             <ul class="plan-list">

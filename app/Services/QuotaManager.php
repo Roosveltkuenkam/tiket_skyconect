@@ -17,8 +17,16 @@ class QuotaManager
         return (bool) (int) SettingManager::get('quota.enabled', 0);
     }
 
-    public static function rate()
+    public static function rate(?User $owner = null)
     {
+        if ($owner && $owner->isClientOwner()) {
+            $subscription = $owner->activeSubscription();
+
+            if ($subscription && $subscription->plan && $subscription->plan->quota_rate_percent !== null) {
+                return max(0, (float) $subscription->plan->quota_rate_percent);
+            }
+        }
+
         return max(0, (float) SettingManager::get('quota.rate', 10));
     }
 
@@ -27,13 +35,13 @@ class QuotaManager
         return max(0, (int) SettingManager::get('quota.minimum_balance', 0));
     }
 
-    public static function commissionFor($amount)
+    public static function commissionFor($amount, ?User $owner = null)
     {
         if (! self::enabled()) {
             return 0;
         }
 
-        return (int) ceil(((int) $amount) * self::rate() / 100);
+        return (int) ceil(((int) $amount) * self::rate($owner) / 100);
     }
 
     public static function consumeForOrder(Order $order, User $owner, ?Payment $payment = null)
@@ -86,7 +94,7 @@ class QuotaManager
             'metadata' => [
                 'order_reference' => $order->reference,
                 'order_amount' => (int) $order->amount,
-                'quota_rate' => self::rate(),
+                'quota_rate' => self::rate($owner),
             ],
         ]);
 
@@ -99,7 +107,9 @@ class QuotaManager
 
     public static function quotaRequiredForOrder(Order $order)
     {
-        return self::commissionFor($order->amount);
+        $owner = optional(optional($order->plan)->router)->user;
+
+        return self::commissionFor($order->amount, $owner);
     }
 
     public static function walletFor(User $owner)

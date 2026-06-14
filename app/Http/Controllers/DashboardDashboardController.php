@@ -113,7 +113,7 @@ class DashboardDashboardController extends Controller
 
         $quotaWallet = QuotaManager::walletFor($request->user());
         $quotaMethods = $this->quotaMethods();
-        $quotaRate = QuotaManager::rate();
+        $quotaRate = QuotaManager::rate($request->user());
         $quotaMinimumTopup = max(100, (int) SettingManager::get('quota.minimum_topup', 1000));
         $quotaValidity = optional($request->user()->activeSubscription())->expires_at;
         $quotaSalesCapacity = $quotaRate > 0

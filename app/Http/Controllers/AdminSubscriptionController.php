@@ -39,6 +39,8 @@ class AdminSubscriptionController extends Controller
 
     public function storePlan(Request $request)
     {
+        abort_unless($request->user()->isSuperAdmin(), 403);
+
         $data = $request->validate([
             'name' => 'required|string|max:255|unique:subscription_plans,name',
             'description' => 'nullable|string|max:2000',
@@ -46,6 +48,8 @@ class AdminSubscriptionController extends Controller
             'max_routers' => 'nullable|integer|min:0',
             'max_tickets_per_month' => 'nullable|integer|min:0',
             'max_sales_per_month' => 'nullable|integer|min:0',
+            'quota_rate_percent' => 'required|numeric|min:0|max:100',
+            'withdrawal_fee_percent' => 'required|numeric|min:0|max:100',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -59,9 +63,61 @@ class AdminSubscriptionController extends Controller
             'max_routers' => $plan->max_routers,
             'max_tickets_per_month' => $plan->max_tickets_per_month,
             'max_sales_per_month' => $plan->max_sales_per_month,
+            'quota_rate_percent' => $plan->quota_rate_percent,
+            'withdrawal_fee_percent' => $plan->withdrawal_fee_percent,
         ], $request);
 
         return back()->with('success', __('ui.subscriptions_page.messages.plan_created'));
+    }
+
+    public function updatePlan(Request $request, SubscriptionPlan $plan)
+    {
+        abort_unless($request->user()->isSuperAdmin(), 403);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255|unique:subscription_plans,name,' . $plan->id,
+            'description' => 'nullable|string|max:2000',
+            'monthly_price' => 'required|integer|min:0',
+            'max_routers' => 'nullable|integer|min:0',
+            'max_tickets_per_month' => 'nullable|integer|min:0',
+            'max_sales_per_month' => 'nullable|integer|min:0',
+            'quota_rate_percent' => 'required|numeric|min:0|max:100',
+            'withdrawal_fee_percent' => 'required|numeric|min:0|max:100',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $data['is_active'] = $request->boolean('is_active');
+
+        $oldValues = $plan->only([
+            'name',
+            'description',
+            'monthly_price',
+            'max_routers',
+            'max_tickets_per_month',
+            'max_sales_per_month',
+            'quota_rate_percent',
+            'withdrawal_fee_percent',
+            'is_active',
+        ]);
+
+        $plan->update($data);
+
+        ActivityLogger::log('subscription_plan.updated', $plan, [
+            'old' => $oldValues,
+            'new' => $plan->fresh()->only([
+                'name',
+                'description',
+                'monthly_price',
+                'max_routers',
+                'max_tickets_per_month',
+                'max_sales_per_month',
+                'quota_rate_percent',
+                'withdrawal_fee_percent',
+                'is_active',
+            ]),
+        ], $request);
+
+        return back()->with('success', __('ui.subscriptions_page.messages.plan_updated'));
     }
 
     public function assign(Request $request, User $client)

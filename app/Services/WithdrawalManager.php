@@ -23,10 +23,10 @@ class WithdrawalManager
             - (int) $wallet->pending_withdrawal_amount);
     }
 
-    public static function feeFor(int $amount)
+    public static function feeFor(int $amount, ?User $client = null)
     {
-        $type = self::feeType();
-        $value = max(0, (float) SettingManager::get('withdrawals.fee_value', 0));
+        $type = self::feeType($client);
+        $value = self::feeValue($client);
 
         if ($type === 'percent') {
             return (int) ceil($amount * $value / 100);
@@ -35,11 +35,28 @@ class WithdrawalManager
         return (int) $value;
     }
 
-    public static function feeType()
+    public static function feeType(?User $client = null)
     {
+        if ($client && $client->isClientOwner()) {
+            return 'percent';
+        }
+
         return SettingManager::get('withdrawals.fee_type', 'fixed') === 'percent'
             ? 'percent'
             : 'fixed';
+    }
+
+    public static function feeValue(?User $client = null)
+    {
+        if ($client && $client->isClientOwner()) {
+            $subscription = $client->activeSubscription();
+
+            if ($subscription && $subscription->plan && $subscription->plan->withdrawal_fee_percent !== null) {
+                return max(0, (float) $subscription->plan->withdrawal_fee_percent);
+            }
+        }
+
+        return max(0, (float) SettingManager::get('withdrawals.fee_value', 0));
     }
 
     public static function minimumAmount()
@@ -90,7 +107,7 @@ class WithdrawalManager
                 abort(422, 'Solde disponible insuffisant pour ce retrait.');
             }
 
-            $feeAmount = min($amount, self::feeFor($amount));
+            $feeAmount = min($amount, self::feeFor($amount, $client));
             $withdrawal = WithdrawalRequest::create([
                 'user_id' => $client->id,
                 'reference' => 'WD-' . strtoupper(Str::random(10)),
@@ -105,7 +122,8 @@ class WithdrawalManager
                 'client_note' => $data['client_note'] ?? null,
                 'metadata' => [
                     'available_before' => self::availableBalance($wallet),
-                    'fee_type' => self::feeType(),
+                    'fee_type' => self::feeType($client),
+                    'fee_value' => self::feeValue($client),
                 ],
             ]);
 

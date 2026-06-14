@@ -267,6 +267,9 @@ Route::middleware(['auth', 'back_office', 'interface.context'])
         Route::post('/subscriptions/plans', [AdminSubscriptionController::class, 'storePlan'])
             ->middleware('back_office:subscriptions.manage')
             ->name('subscriptions.plans.store');
+        Route::patch('/subscriptions/plans/{plan}', [AdminSubscriptionController::class, 'updatePlan'])
+            ->middleware('back_office:subscriptions.manage')
+            ->name('subscriptions.plans.update');
         Route::post('/clients/{client}/subscription', [AdminSubscriptionController::class, 'assign'])
             ->middleware('back_office:subscriptions.manage')
             ->name('subscriptions.assign');

@@ -18,11 +18,15 @@ class SubscriptionPlan extends Model
         'max_routers',
         'max_tickets_per_month',
         'max_sales_per_month',
+        'quota_rate_percent',
+        'withdrawal_fee_percent',
         'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'quota_rate_percent' => 'float',
+        'withdrawal_fee_percent' => 'float',
     ];
 
     protected static function boot()

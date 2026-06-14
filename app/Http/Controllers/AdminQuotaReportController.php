@@ -18,14 +18,16 @@ class AdminQuotaReportController extends Controller
         $quotaTransactions = $this->quotaTransactionsQuery($filters);
         $topups = $this->topupsQuery($filters);
         $withdrawals = $this->withdrawalsQuery($filters);
-        $quotaRate = QuotaManager::rate();
+        $walletsForCapacity = ClientWallet::with('user')
+            ->when($filters['client_id'], function ($query) use ($filters) {
+                $query->where('user_id', $filters['client_id']);
+            })
+            ->get();
 
         $kpis = [
             'quota_loaded' => (clone $quotaTransactions)->where('type', QuotaTransaction::TYPE_TOPUP)->sum('amount'),
             'commissions' => (clone $quotaTransactions)->where('type', QuotaTransaction::TYPE_SALE_COMMISSION)->sum('amount'),
-            'quota_credit_remaining' => ClientWallet::when($filters['client_id'], function ($query) use ($filters) {
-                $query->where('user_id', $filters['client_id']);
-            })->sum('quota_balance'),
+            'quota_credit_remaining' => $walletsForCapacity->sum('quota_balance'),
             'adjustments' => (clone $quotaTransactions)->where('type', QuotaTransaction::TYPE_ADJUSTMENT)->sum('amount'),
             'topups_pending' => (clone $topups)->where('status', ClientQuotaTopup::STATUS_PENDING)->sum('amount'),
             'withdrawals_requested' => (clone $withdrawals)->whereIn('status', [WithdrawalRequest::STATUS_REQUESTED, WithdrawalRequest::STATUS_APPROVED])->sum('amount_requested'),
@@ -33,9 +35,13 @@ class AdminQuotaReportController extends Controller
             'withdrawal_fees' => (clone $withdrawals)->where('status', WithdrawalRequest::STATUS_PROCESSED)->sum('fee_amount'),
             'amount_paid_to_clients' => (clone $withdrawals)->where('status', WithdrawalRequest::STATUS_PROCESSED)->sum('amount_to_pay'),
         ];
-        $kpis['quota_sales_capacity'] = $quotaRate > 0
-            ? (int) floor($kpis['quota_credit_remaining'] * 100 / $quotaRate)
-            : (int) $kpis['quota_credit_remaining'];
+        $kpis['quota_sales_capacity'] = $walletsForCapacity->sum(function ($wallet) {
+            $walletQuotaRate = QuotaManager::rate($wallet->user);
+
+            return $walletQuotaRate > 0
+                ? (int) floor(((int) $wallet->quota_balance) * 100 / $walletQuotaRate)
+                : (int) $wallet->quota_balance;
+        });
 
         $walletRows = ClientWallet::with('user')
             ->when($filters['client_id'], function ($query) use ($filters) {
@@ -49,7 +55,6 @@ class AdminQuotaReportController extends Controller
             'filters' => $filters,
             'clients' => User::where('role', User::ROLE_CLIENT)->orderBy('name')->get(),
             'kpis' => $kpis,
-            'quotaRate' => $quotaRate,
             'walletRows' => $walletRows,
             'recentTransactions' => (clone $quotaTransactions)->with(['user', 'order'])->latest()->limit(20)->get(),
             'recentWithdrawals' => (clone $withdrawals)->with('user')->latest()->limit(20)->get(),

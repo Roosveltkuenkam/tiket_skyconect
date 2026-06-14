@@ -38,7 +38,7 @@ class DashboardQuotaTopupController extends Controller
             'commissions' => $commissions,
             'plans' => $plans,
             'methods' => $this->methods(),
-            'quotaRate' => QuotaManager::rate(),
+            'quotaRate' => QuotaManager::rate($request->user()),
             'minimumBalance' => QuotaManager::minimumBalance(),
             'availableWithdrawalBalance' => WithdrawalManager::availableBalance($wallet),
         ]);

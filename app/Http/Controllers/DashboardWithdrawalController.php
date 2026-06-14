@@ -23,8 +23,8 @@ class DashboardWithdrawalController extends Controller
             'availableBalance' => WithdrawalManager::availableBalance($wallet),
             'minimumAmount' => WithdrawalManager::minimumAmount(),
             'maximumAmount' => WithdrawalManager::maximumAmount(),
-            'feeType' => WithdrawalManager::feeType(),
-            'feeValue' => WithdrawalManager::feeFor(10000),
+            'feeType' => WithdrawalManager::feeType($request->user()),
+            'feeValue' => WithdrawalManager::feeValue($request->user()),
         ]);
     }
 
@@ -40,6 +40,6 @@ class DashboardWithdrawalController extends Controller
 
         WithdrawalManager::request($request->user(), $data);
 
-        return back()->with('success', 'Demande de retrait envoyee.');
+        return back()->with('success', __('ui.dashboard_withdrawals.created'));
     }
 }
